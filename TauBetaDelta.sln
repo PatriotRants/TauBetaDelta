@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{CCF8CA44-E12
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TauBetaDelta", "src\lib\TauBetaDelta\TauBetaDelta.csproj", "{FF24C982-CE57-4B89-BB29-C1D283036F60}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TauBetaDeltaChi", "src\lib\TauBetaDeltaChi\TauBetaDeltaChi.csproj", "{20DA532A-2D32-492F-ABAC-DD16ED91D965}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TauBetaDeltaChi", "src\lib\TauBetaChi\TauBetaChi.csproj", "{20DA532A-2D32-492F-ABAC-DD16ED91D965}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
