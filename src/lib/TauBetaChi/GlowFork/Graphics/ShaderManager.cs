@@ -5,6 +5,7 @@ using ErrorCode = ForgeWorks.GlowFork.ErrorCode;
 
 using ForgeWorks.TauBetaDelta.Logging;
 using System.Text;
+using System.Runtime.CompilerServices;
 
 namespace ForgeWorks.GlowFork.Graphics;
 
@@ -12,7 +13,20 @@ public class ShaderManager
 {
     private static readonly Lazy<ShaderManager> INSTANCE = new(() => new());
 
-    private readonly Dictionary<string, int> _programs = new();
+    private static readonly Dictionary<string, ShaderType> TAGTYPES = new() {
+        { "[fragment]",     ShaderType.FragmentShader },
+        { "[frag_arb]",     ShaderType.FragmentShaderArb },
+        { "[vertex]",       ShaderType.VertexShader },
+        { "[vert_arb]",     ShaderType.VertexShaderArb },
+        { "[geometry]",     ShaderType.GeometryShader },
+        { "[tess_eval]",    ShaderType.TessEvaluationShader },
+        { "[tess_ctrl]",    ShaderType.TessControlShader },
+        { "[compute]",      ShaderType.ComputeShader },
+    };
+    private static readonly string[] TAGS = TAGTYPES.Keys.ToArray();
+
+    private readonly Dictionary<string, Shader> shaderPrograms = new();
+
     private (LoadStatus condition, ErrorCode errCode, string message) Status { get; set; }
 
     internal static ShaderManager Instance => INSTANCE.Value;
@@ -33,68 +47,83 @@ public class ShaderManager
         //  We could preload validation values ...???
         // else
         // {
-        //     Status = (LoadStatus.Okay, ErrorCode.NoErr, $"[{nameof(ShaderManager)}] Loading Shader directory '{ShaderDirectory}'");
+        //     Status = (LoadStatus.Okay, ErrorCode.NoErr, $"[{nameof(ShaderManager)}] Loading Shaders '{ShaderDirectory}'");
         // }
     }
 
-    public int Load(ShaderType shaderType, string sourceTag)
+    /// <summary>
+    /// Loads all shaders
+    /// </summary>
+    public void LoadShaders()
     {
-        string source = LoadSource(sourceTag);
-        var shader = GL.CreateShader(shaderType);
+        var shaderFiles = Directory.GetFiles(Instance.ShaderDirectory);
 
-        GL.ShaderSource(shader, source);
-        GL.CompileShader(shader);
-        if (!ValidateShader(shader, out string info))
+        foreach (var file in shaderFiles)
         {
-            Log(LoadStatus.Error, info);
-            return -1;
+            LoadShader(file);
+        }
+    }
+    /// <summary>
+    /// Load a single shader
+    /// </summary>
+    public Shader LoadShader(string shaderFile)
+    {
+        var file = Path.Combine(ShaderDirectory, shaderFile);
+        var source = LoadFile(file);
+        string shaderName = string.Empty;
+        List<int> shaders = new();
+        Shader shader = null;
+
+        if (source.Length > 0)
+        {
+            shaderName = Path.GetFileNameWithoutExtension(shaderFile);
+
+            foreach (var shaderInfo in ParseShaders(shaderName, source))
+            {
+                //  compile
+                var handle = GL.CreateShader(shaderInfo.type);
+                GL.ShaderSource(handle, shaderInfo.source);
+                GL.CompileShader(handle);
+                if (!ValidateShader(handle, out string shaderLog))
+                {
+                    Log(LoadStatus.Error, shaderLog);
+                    handle = -1;
+                }
+
+                shaders.Add(handle);
+            }
+
+            shader = new(shaderName, shaders.ToArray());
+            if (!ValidateProgram(shader.Program, out string programLog))
+            {
+                Log(LoadStatus.Error, programLog);
+                shader = null;
+            }
+            else
+            {
+                shaderPrograms.Add(shaderName, shader);
+            }
         }
 
         return shader;
     }
-    public void CreateProgram(string programName, params int[] shaders)
+    /// <summary>
+    /// Get a shader program by name
+    /// </summary>
+    public Shader GetShader(string programName)
     {
-        //  create the program
-        var program = GL.CreateProgram();
-        //  attach shaders
-        foreach (var shader in shaders)
+        if (shaderPrograms.TryGetValue(programName, out Shader shader))
         {
-            GL.AttachShader(program, shader);
-        }
-        //  link
-        GL.LinkProgram(program);
-        if (!ValidateProgram(program, out string info))
-        {
-            Log(LoadStatus.Error, info);
-            return;
+            return shader;
         }
 
-        //  clean up unnecessary artifacts
-        foreach (var shader in shaders)
-        {
-            GL.DetachShader(program, shader);
-            GL.DeleteShader(shader);
-        }
-
-        //  cache the program
-        _programs.Add(programName, program);
+        return null;
     }
-    public void DeleteProgram(string programName)
-    {
-        if (_programs.TryGetValue(programName, out int program))
-        {
-            GL.DeleteProgram(program);
-        }
-    }
-    public int GetProgram(string programName)
-    {
-        if (_programs.TryGetValue(programName, out int program))
-        {
-            return program;
-        }
-
-        return -1;
-    }
+    /// <summary>
+    /// Get the current ShaderManager error status
+    /// </summary>
+    /// <param name="errCode"></param>
+    /// <returns></returns>
     public bool GetError(out ErrorCode errCode)
     {
         errCode = Status.errCode;
@@ -102,38 +131,60 @@ public class ShaderManager
         return errCode != ErrorCode.NoErr;
     }
 
-    private string LoadSource(string tag)
+    private static string[] LoadFile(string sourceFile)
     {
-        var tagInfo = tag.Split(".", 2, StringSplitOptions.RemoveEmptyEntries);
-        var shaderInfo = (file: $"{tagInfo[0]}.shaders", tag: tagInfo[1]);
-        var source = new StringBuilder();
+        List<string> lines = new();
+        string line = string.Empty;
 
-        //  if validation fails, check error status & code
-        if (ValidateShaderInfo(shaderInfo, out int position))
+        using (var file = File.OpenRead(sourceFile))
+        using (var reader = new StreamReader(file, Encoding.UTF8, false, leaveOpen: false))
         {
-            //  position tells us where reading stopped
-            var shaderFile = Path.Combine(ShaderDirectory, shaderInfo.file);
-            using (var file = File.OpenRead(shaderFile))
+            while ((line = reader.ReadLine()) != null)
             {
-                file.Position = position;
-                string line = string.Empty;
-                using (var reader = new StreamReader(file, Encoding.UTF8, false, leaveOpen: false))
-                {
-                    while ((line = reader.ReadLine()) != null)
-                    {
-                        //  did we reach end of file?
-                        if (IsShaderTag(line))
-                        { break; }
-                        if (!string.IsNullOrEmpty(line))
-                        //  new lines are stripped with ReadLine method
-                        { source.AppendLine(line); }
-                    }
-                }
+                lines.Add(line);
             }
-            //  end reading where a line matches the format "[...]"
         }
 
-        return source.ToString();
+        //  add a null line at the end
+        lines.Add(null);
+
+        return lines.ToArray();
+    }
+    private static IEnumerable<(ShaderType type, string source)> ParseShaders(string sourceTag, string[] source)
+    {
+        int line = 0;
+        ShaderType type;
+        StringBuilder shader;
+
+        while (line < source.Length && source[line] != null)
+        {
+            if (TAGS.Any(t => t.Equals(source[line])))
+            {
+                //  we have one of the [tag] values
+                if (!TAGTYPES.TryGetValue(source[line], out type))
+                {
+                    //  unrecognized shader type ... the whole source needs to be ignored
+                    //  TODO: log and break
+                    break;
+                }
+                //  get a new string builder
+                shader = new();
+                //  increment line count
+                ++line;
+                //  we have a tag type so read until the next tag type
+                while (source[line] != null && !TAGS.Any(t => t.Equals(source[line])))
+                {
+                    shader.AppendLine(source[line]);
+                    ++line;
+                }
+
+                if (shader.Length > 0)
+                {
+                    //  yield parsed result
+                    yield return (type, shader.ToString());
+                }
+            }
+        }
     }
     private bool ValidateShader(int shader, out string info)
     {
@@ -148,71 +199,5 @@ public class ShaderManager
         GL.GetProgram(program, GetProgramParameterName.LinkStatus, out int flag);
 
         return flag != 0;
-    }
-    private bool ValidateShaderInfo((string file, string tag) shaderInfo, out int position)
-    {
-        position = -1;
-
-        //  validate string are not null or empty
-        if (string.IsNullOrEmpty(shaderInfo.file) ||
-            string.IsNullOrEmpty(shaderInfo.tag))
-        {
-            //  invalid
-
-            //  TODO: set error status & code
-        }
-        //  validate file exists
-        var shaderFile = Path.Combine(ShaderDirectory, shaderInfo.file);
-        if (!File.Exists(shaderFile))
-        {
-            //  invalid
-
-            //  TODO: set error status & code
-        }
-        //  validate tag - locate line position following tag
-        var shaderTag = $"[{shaderInfo.tag}]";
-        using (var file = File.OpenRead(shaderFile))
-        {
-            string line = string.Empty;
-            int length = 0;
-            using (var reader = new StreamReader(file, Encoding.UTF8, false, leaveOpen: true))
-            {
-                while (line != shaderTag)
-                {
-                    //  did we reach end of file?
-                    if ((line = reader.ReadLine()) == null)
-                    {
-                        break;
-                    }
-
-                    //  have to account for the length of the new line since it's lost
-                    length += line.Length + Environment.NewLine.Length;
-                }
-            }
-
-            if (line == shaderTag)
-            {
-                //  set position
-                position = length;
-            }
-        }
-
-        return position != -1;
-    }
-    private bool IsShaderTag(string line)
-    {
-        /* **
-            assumptions:
-                1. assessing a full line
-                2. a shader tag is properly formed
-                    - self-contained on a single line
-                    - demarked with [...]
-                    - nothing of value precedes a tag
-                    - nothing of value follows a tag
-
-                we really don't care what is between the [...]
-        ** */
-        return line.StartsWith('[') &&
-               line.EndsWith(']');
     }
 }

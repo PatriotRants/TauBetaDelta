@@ -1,8 +1,8 @@
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.Common;
 
-using ForgeWorks.TauBetaDelta.Logging;
 using ForgeWorks.GlowFork.Graphics;
+using ForgeWorks.TauBetaDelta.Logging;
 
 namespace ForgeWorks.TauBetaDelta;
 
@@ -11,22 +11,20 @@ public class SplashScreenView : GameView
     private int _vertexBufferObject;
     private int _elementBufferObject;
     private int _vertexArrayObject;
-    private Texture _texture;
 
+    private Texture Texture { get; set; }
     private float[] Vertices { get; set; }
     private uint[] Indices { get; set; }
 
-    public SplashScreenView(GameState gameState) : base(gameState)
+    public SplashScreenView(LoadingState gameState) : base(gameState)
     {
+        Shader = gameState.Shader;
+        Texture = gameState.Textures[0];
     }
 
-    public override void OnLoad()
+    public override void Init()
     {
-        LOGGER.Post(LogLevel.Default, $"{Name}View.{nameof(OnLoad)}");
-
-        //  get program
-        ShaderProgram = SHADERS.GetProgram("splash");
-        GL.UseProgram(ShaderProgram);
+        LOGGER.Post(LogLevel.Default, $"{Name}View.{nameof(Init)}");
 
         Vertices = new float[] {
             //Position          Texture coordinates
@@ -41,7 +39,7 @@ public class SplashScreenView : GameView
             1, 2, 3
         };
 
-        GL.ClearColor(Background);
+        Shader.Use();
 
         // create VAO to align VBO
         _vertexArrayObject = GL.GenVertexArray();
@@ -59,23 +57,28 @@ public class SplashScreenView : GameView
         GL.BufferData(BufferTarget.ElementArrayBuffer, Indices.Length * sizeof(uint), Indices, BufferUsageHint.StaticDraw);
 
         //  pass vertex array to the buffer
-        var vertexLocation = GL.GetAttribLocation(ShaderProgram, "aPosition");
+        var vertexLocation = GL.GetAttribLocation(Shader.Program, "aPosition");
         GL.EnableVertexAttribArray(vertexLocation);
         GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
 
         // setup texture coordinates
-        var texCoordLocation = GL.GetAttribLocation(ShaderProgram, "aTexCoord");
+        var texCoordLocation = GL.GetAttribLocation(Shader.Program, "aTexCoord");
         GL.EnableVertexAttribArray(texCoordLocation);
         GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
 
-        if (ASSETS.LoadTexture("splash", out _texture))
-        {
-            _texture.Use(TextureUnit.Texture0);
-        }
-        else
-        {
-            //  log error condition
-        }
+        OnLoad();
+    }
+
+    public override void OnLoad()
+    {
+        LOGGER.Post(LogLevel.Default, $"{Name}View.{nameof(OnLoad)}");
+
+        GL.ClearColor(Background);
+
+        Texture.Use(TextureUnit.Texture0);
+
+        //  raise event
+        base.OnLoad();
     }
     public override void OnResize(ResizeEventArgs args)
     {
@@ -92,9 +95,9 @@ public class SplashScreenView : GameView
         // Bind the VAO
         GL.BindVertexArray(_vertexArrayObject);
 
-        //  use the texture & program
-        _texture.Use(TextureUnit.Texture0);
-        GL.UseProgram(ShaderProgram);
+        //  use the texture & shader program
+        Texture.Use(TextureUnit.Texture0);
+        Shader.Use();
 
         GL.DrawElements(PrimitiveType.Triangles, Indices.Length, DrawElementsType.UnsignedInt, 0);
 

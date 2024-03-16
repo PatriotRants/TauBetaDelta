@@ -12,8 +12,8 @@ public abstract partial class GameState
             View = null;
         }
 
-        public override void Load() { }
+        public override void Init() { }
 
-        public override void Unload() { }
+        public override void Dispose() { }
     }
 }

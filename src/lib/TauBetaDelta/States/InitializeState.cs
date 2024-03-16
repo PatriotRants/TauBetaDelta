@@ -17,28 +17,29 @@ public class InitializeState : GameState
 
         View = new InitialView(this)
         {
-            ClientSize = (1200, 900),
-            ViewPort = (1200, 900),
-            WindowBorder = WindowBorder.Resizable,
-            WindowState = WindowState.Maximized,
-            ViewRefresh = OnViewRefresh
+            ClientSize = (800, 600),
+            ViewPort = (800, 600),
+            WindowBorder = WindowBorder.Hidden,
+            WindowState = WindowState.Normal,
+            IsVisible = false
         };
-
-        Clock.Start();
+        View.Load += OnViewLoaded;
     }
 
-    public override void Load()
+    public override void Init()
+    {
+        //  this will actually never get called for this state because
+        //  this state is assigned before the Game has sub to event
+    }
+    public override void Dispose()
+    {
+        View.Load -= OnViewLoaded;
+        View.Dispose();
+    }
+
+    private void OnViewLoaded()
     {
         //  TODO: install AssetManager
-    }
-
-    public override void Unload()
-    {
-        //  nothing to unload here (yet)...
-    }
-
-    private void OnViewRefresh()
-    {
         ChangeState(Next);
     }
 }

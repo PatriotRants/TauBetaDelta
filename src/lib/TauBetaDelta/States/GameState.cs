@@ -24,11 +24,12 @@ public abstract partial class GameState : State, IGameState
 
     protected GameState() { }
 
-    public abstract void Load();
-    public abstract void Unload();
+    public abstract void Init();
+    public abstract void Dispose();
 
     protected void ChangeState(string nextState)
     {
         GAME.ChangeState(nextState);
     }
+
 }
