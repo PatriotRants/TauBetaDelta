@@ -10,6 +10,6 @@
     <PackageReference Include="OpenTK" Version="4.8.2" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TauBetaDeltaChi\TauBetaDeltaChi.csproj" />
+    <ProjectReference Include="..\TauBetaChi\TauBetaChi.csproj" />
   </ItemGroup>
 </Project>

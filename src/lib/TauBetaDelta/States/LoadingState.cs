@@ -1,9 +1,9 @@
 using OpenTK.Mathematics;
-using OpenTK.Graphics.OpenGL4;
 
 using ErrorCode = ForgeWorks.GlowFork.ErrorCode;
 
 using ForgeWorks.TauBetaDelta.Logging;
+using ForgeWorks.GlowFork.Graphics;
 
 namespace ForgeWorks.TauBetaDelta;
 
@@ -13,28 +13,40 @@ namespace ForgeWorks.TauBetaDelta;
 /// </summary>
 public class LoadingState : GameState
 {
+    private readonly List<Texture> textures = new();
+
+    internal Shader Shader { get; set; }
+    internal Texture[] Textures => textures.ToArray();
+
     public LoadingState() : base()
     {
         Name = nameof(LoadingState);
         Next = string.Empty;
 
+        LoadSplash();
+
         View = new SplashScreenView(this)
         {
             //  change the background color
             Background = new Color4(27, 27, 27, 128),
-            ViewPort = (1200, 900),
+            ViewPort = GAME.GetState().View.ViewPort,
             ClientSize = GAME.GetState().View.ClientSize,
+            WindowBorder = GAME.GetState().View.WindowBorder,
+            WindowState = GAME.GetState().View.WindowState,
+            IsVisible = true,
         };
+        View.Load += OnViewLoaded;
 
         LOGGER.Post(LogLevel.Default, $"{Name}.View [{((SplashScreenView)View).ClientSize};{((SplashScreenView)View).Location};{((SplashScreenView)View).ViewPort}]");
     }
 
-    public override void Load()
+    public override void Init()
     {
+        View.Init();
+
         //  TODO: Load assets & resources
         try
         {
-            ShowSplash();
 
             LOGGER.Post(LogLevel.Debug, ASSETS.Info);
             if (!ASSETS.Load())
@@ -73,20 +85,32 @@ public class LoadingState : GameState
 
         //  when loading is complete we can call the next state from here.
     }
-
-    public override void Unload()
+    public override void Dispose()
     {
         // delete shader programs
-        SHADERS.DeleteProgram("splash");
-        // View.ShaderProgram = -1;
+        Shader.Dispose();
+        //  unsub events
+        View.Load -= OnViewLoaded;
+        //  dispose view
+        View.Dispose();
     }
 
-    private void ShowSplash()
+    private void LoadSplash()
     {
-        //  load shaders
-        var frag = SHADERS.Load(ShaderType.FragmentShader, "splash.fragment");
-        var vert = SHADERS.Load(ShaderType.VertexShader, "splash.vertex");
-        SHADERS.CreateProgram("splash", frag, vert);
-        View.OnLoad();
+        Shader = SHADERS.LoadShader("splash.shaders");
+
+        if (ASSETS.LoadTexture("splash", out Texture _texture))
+        {
+            textures.Add(_texture);
+        }
+        else
+        {
+            //  log error condition
+        }
+    }
+    private void OnViewLoaded()
+    {
+        //  TODO: install AssetManager
+        View.CenterWindow();
     }
 }

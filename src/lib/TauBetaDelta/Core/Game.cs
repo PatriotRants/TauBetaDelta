@@ -1,11 +1,9 @@
-using OpenTK.Mathematics;
-using OpenTK.Graphics.ES11;
+using OpenTK.Windowing.Desktop;
 
 using ForgeWorks.GlowFork;
 using ForgeWorks.GlowFork.Automata;
 
 using ForgeWorks.TauBetaDelta.Extensibility;
-using OpenTK.Windowing.Desktop;
 
 namespace ForgeWorks.TauBetaDelta;
 
@@ -66,11 +64,16 @@ internal sealed partial class Game : IRegistryItem, IGame
     }
     private void OnStateChanged(State oldState)
     {
-        //  unload old state
-        ((GameState)oldState).Unload();
         //  load the new state
-        GameState.Load();
-        //  update window client view
-        _window.SetView(((IGameState)GameState).View);
+        GameState.Init();
+        //  update window client view (scene)
+        _window.ChangeView(((IGameState)GameState).View);
+        //  dispose old state
+        ((GameState)oldState).Dispose();
+    }
+
+    internal void CenterWindow()
+    {
+        _window.CenterWindow();
     }
 }

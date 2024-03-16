@@ -1,21 +1,23 @@
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.Common;
 
+using ForgeWorks.TauBetaDelta.Logging;
+
 namespace ForgeWorks.TauBetaDelta;
 
 public class InitialView : GameView
 {
-    public Action ViewRefresh { get; set; }
+    public InitialView(InitializeState gameState) : base(gameState) { }
 
-    public InitialView(GameState gameState) : base(gameState) { }
-
-    public override void OnRefresh()
+    public override void OnLoad()
     {
-        ViewRefresh?.Invoke();
+        base.OnLoad();
     }
+
+    public override void Init() { }
     public override void OnRenderFrame(FrameEventArgs args)
     {
-        LOGGER.Post(Logging.LogLevel.Default, $"{nameof(InitialView)}.{nameof(OnRenderFrame)}");
+        LOGGER.Post(LogLevel.Default, $"{nameof(InitialView)}.{nameof(OnRenderFrame)}");
 
         GL.ClearColor(Background);
         GL.Clear(ClearBufferMask.ColorBufferBit);
@@ -24,7 +26,7 @@ public class InitialView : GameView
     }
     public override void OnResize(ResizeEventArgs args)
     {
-        LOGGER.Post(Logging.LogLevel.Default, $"{Name}View.{nameof(OnResize)} [{Location};{ViewPort}]");
+        LOGGER.Post(LogLevel.Default, $"{Name}View.{nameof(OnResize)} [{Location};{ViewPort}]");
 
         //  update the opengl viewport
         SetViewport(Location, ViewPort);

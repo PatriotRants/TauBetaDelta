@@ -18,6 +18,7 @@ internal sealed partial class Game
             ClientSize = view.ClientSize,
             WindowState = view.WindowState,
             WindowBorder = view.WindowBorder,
+            StartVisible = view.IsVisible,
             Title = view.Title
         })
         {
@@ -123,6 +124,15 @@ internal sealed partial class Game
         internal void SetView(IView view)
         {
             View = view;
+        }
+        internal void ChangeView(IView view)
+        {
+            SetView(view);
+
+            ClientSize = view.ClientSize;
+            WindowBorder = view.WindowBorder;
+            WindowState = view.WindowState;
+            IsVisible = view.IsVisible;
         }
     }
 }
