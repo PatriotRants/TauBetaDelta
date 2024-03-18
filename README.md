@@ -15,7 +15,7 @@ I've streamlined the Game initialization and window creation. Also, we are displ
 Finished the basic implementation of the `Network` components: `NetPeer`, `Client`, `Server`. A couple of interfaces provided: `INetwork` and `IClient`.
 
 When `LoadingState` begins initialization, `INetwork.StartNetwork(bool isLocal)` initiates network start up. If `isLocal = false`, then we are expecting a public server IP Address (this will be addressed in a later iteration). Once the `Client` and `Server` components' `IsRunning = true`, the `INetwork.Status = NetworkStatus.Running`. When the *game* is shutting down (`Window.OnClose(...)` event raised), the `INetwork.StopNetwork()` method initiates shutdown:
-1. Client sends the Server a ShutDownRquestCommand (`"<SHUTDOWN>"`)
+1. Client sends the Server a _**ShutDownRequestCommand**_ (`"<SHUTDOWN>"`)
 2. Server initiates shut down
 3. Server responds to Client with `"<SHUTDOWN>"`
 4. Client receives response and initiates shut down
