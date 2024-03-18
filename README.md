@@ -20,6 +20,6 @@ When `LoadingState` begins initialization, `INetwork.StartNetwork(bool isLocal)`
 3. Server responds to Client with `"<SHUTDOWN>"`
 4. Client receives response and initiates shut down
 
-When bot components are shut down, `INetwork.Status = NetworkStatus.Idle`.
+When both components are shut down, `INetwork.Status = NetworkStatus.Idle`.
 
 There is a lot more to do with networking. Not knowing what I don't know (yet), I have not implemented any of the serialization models for messaging and commands.
