@@ -11,7 +11,9 @@ So ... there is a lot to be done. I'm working on issues and the project roadmap.
 
 I've streamlined the Game initialization and window creation. Also, we are displaying the temporary splash screen.
 
-**Mar 17, 2024**  
+**Mar 17, 2024** *[See Lidgren.Network](https://github.com/lidgren/lidgren-network-gen3/tree/master/Lidgren.Network)*  
+***TBD** Networking* is (will be) heavily influenced by the *Lidgren.Network* library.
+
 Finished the basic implementation of the `Network` components: `NetPeer`, `Client`, `Server`. A couple of interfaces provided: `INetwork` and `IClient`.
 
 When `LoadingState` begins initialization, `INetwork.StartNetwork(bool isLocal)` initiates network start up. If `isLocal = false`, then we are expecting a public server IP Address (this will be addressed in a later iteration). Once the `Client` and `Server` components' `IsRunning = true`, the `INetwork.Status = NetworkStatus.Running`. When the *game* is shutting down (`Window.OnClose(...)` event raised), the `INetwork.StopNetwork()` method initiates shutdown:
