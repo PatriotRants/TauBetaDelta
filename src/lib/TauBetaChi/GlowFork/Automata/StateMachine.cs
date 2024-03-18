@@ -10,7 +10,7 @@ namespace ForgeWorks.GlowFork.Automata;
 /// <summary>
 /// <para>Core GameEngine Component</para>
 /// 
-/// Use the <see cref="StateMachine"/> to easily map and manage the application state and transitional configurations.
+/// Use the <see cref="StateMachine"/> to map and manage application states and transitional configurations.
 /// </summary>
 public sealed class StateMachine
 {
@@ -92,6 +92,11 @@ public sealed class StateMachine
 
         return this;
     }
+    /// <summary>
+    /// Get the <see cref="Current"/> as <see cref="TState"/>
+    /// </summary>
+    /// <typeparam name="TState">where TState : State</typeparam>
+    /// <returns><see cref="TState"/></returns>
     public TState GetCurrent<TState>() where TState : State
     {
         return (TState)Current;

@@ -1,14 +1,19 @@
 using OpenTK.Windowing.Desktop;
 
+using ForgeWorks.ShowBird;
+
 using ForgeWorks.GlowFork;
 using ForgeWorks.GlowFork.Automata;
 
+using ForgeWorks.TauBetaDelta.Collections;
 using ForgeWorks.TauBetaDelta.Extensibility;
 
 namespace ForgeWorks.TauBetaDelta;
 
 internal sealed partial class Game : IRegistryItem, IGame
 {
+    private static readonly INetwork NETWORK = Registry.Get<Network>();
+
     private readonly Lazy<StateMachine> _stateMachine;
 
     private StateMachine StateMachine => _stateMachine.Value;
@@ -25,7 +30,7 @@ internal sealed partial class Game : IRegistryItem, IGame
         Title = title;
 
         _stateMachine = new(() => new StateMachine(GameState.Empty)
-            .WithStates("InitializeState", "LoadingState"));
+            .WithStates(nameof(StartupState), nameof(LoadingState)));
 
         Clock.Instance.Tick += GameClockTick;
     }
@@ -45,7 +50,7 @@ internal sealed partial class Game : IRegistryItem, IGame
         //  setting to initial state
         if (StateMachine.Current == GameState.Empty)
         {
-            StateMachine.ChangeState<InitializeState>();
+            StateMachine.ChangeState<StartupState>();
             _window = new Window(((IGameState)GameState).View);
         }
 
@@ -56,6 +61,10 @@ internal sealed partial class Game : IRegistryItem, IGame
     {
         //  start game
         _window.Run();
+    }
+    internal void Stop()
+    {
+        _window.Close();
     }
 
     private void GameClockTick(TimeSpan span, DateTime time)
@@ -75,5 +84,13 @@ internal sealed partial class Game : IRegistryItem, IGame
     internal void CenterWindow()
     {
         _window.CenterWindow();
+    }
+
+    /// <summary>
+    /// <inheritdoc cref="IDisposable.Dispose"/>
+    /// </summary>
+    public void Dispose()
+    {
+        NETWORK.StopNetwork();
     }
 }

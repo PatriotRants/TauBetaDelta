@@ -1,3 +1,5 @@
+using ForgeWorks.ShowBird;
+
 using ForgeWorks.GlowFork.Automata;
 using ForgeWorks.GlowFork.Graphics;
 
@@ -12,7 +14,9 @@ public abstract partial class GameState : State, IGameState
 {
     private static readonly Resources RESOURCES = Registry.Get<Resources>();
 
+    protected static readonly INetwork NETWORK = Registry.Get<Network>();
     protected static readonly IGame GAME = Registry.Get<Game>();
+
     protected static readonly LoggerManager LOGGER = RESOURCES.LoggerManager;
     protected static readonly ShaderManager SHADERS = RESOURCES.ShaderManager;
     protected static readonly AssetManager ASSETS = RESOURCES.AssetManager;

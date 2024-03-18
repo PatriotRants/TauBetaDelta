@@ -8,14 +8,14 @@ namespace ForgeWorks.TauBetaDelta;
 /// This is the first state to start the game.
 /// We will use the Load function to install the AssetManager
 /// </summary>
-public class InitializeState : GameState
+public class StartupState : GameState
 {
-    public InitializeState() : base()
+    public StartupState() : base()
     {
-        Name = nameof(InitializeState);
+        Name = nameof(StartupState);
         Next = nameof(LoadingState);
 
-        View = new InitialView(this)
+        View = new StartupView(this)
         {
             ClientSize = (800, 600),
             ViewPort = (800, 600),
