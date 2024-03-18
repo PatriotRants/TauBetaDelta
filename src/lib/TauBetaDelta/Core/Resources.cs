@@ -7,14 +7,29 @@ using ForgeWorks.TauBetaDelta.Extensibility;
 
 namespace ForgeWorks.TauBetaDelta;
 
-public class Resources : IRegistryItem
+public class Resources : IRegistryItem, IDisposable
 {
+    /// <summary>
+    /// <inheritdoc />
+    /// </summary>
+    public string Name { get; }
+    /// <summary>
+    /// Get the current <see cref="LoggerManager.Instance"/>
+    /// </summary>
     public LoggerManager LoggerManager { get; }
+    /// <summary>
+    /// Get the current <see cref="AssetManager.Instance"/>
+    /// </summary>
     public AssetManager AssetManager { get; }
+    /// <summary>
+    /// Get the current <see cref="ShaderManager.Instance"/>
+    /// </summary>
     public ShaderManager ShaderManager { get; }
 
     internal Resources()
     {
+        Name = "Resources";
+
         LoggerManager = GetSingleton<LoggerManager>();
         AssetManager = GetSingleton<AssetManager>();
         ShaderManager = GetSingleton<ShaderManager>();
@@ -33,5 +48,13 @@ public class Resources : IRegistryItem
         }
 
         return (TSingleton)instance.GetValue(null);
+    }
+
+    public void Dispose()
+    {
+        //  TODO: implement dispose on resource items
+        // LoggerManager.Dispose();
+        // AssetManager.Dispose();
+        // ShaderManager.Dispose();
     }
 }

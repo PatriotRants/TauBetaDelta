@@ -5,9 +5,9 @@ using ForgeWorks.TauBetaDelta.Logging;
 
 namespace ForgeWorks.TauBetaDelta;
 
-public class InitialView : GameView
+public class StartupView : GameView
 {
-    public InitialView(InitializeState gameState) : base(gameState) { }
+    public StartupView(StartupState gameState) : base(gameState) { }
 
     public override void OnLoad()
     {
@@ -17,7 +17,7 @@ public class InitialView : GameView
     public override void Init() { }
     public override void OnRenderFrame(FrameEventArgs args)
     {
-        LOGGER.Post(LogLevel.Default, $"{nameof(InitialView)}.{nameof(OnRenderFrame)}");
+        LOGGER.Post(LogLevel.Default, $"{nameof(StartupView)}.{nameof(OnRenderFrame)}");
 
         GL.ClearColor(Background);
         GL.Clear(ClearBufferMask.ColorBufferBit);

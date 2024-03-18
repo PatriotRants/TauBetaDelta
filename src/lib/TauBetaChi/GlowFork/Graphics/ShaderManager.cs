@@ -1,11 +1,8 @@
+using System.Text;
+
 using OpenTK.Graphics.OpenGL4;
 
-using ForgeWorks.GlowFork;
-using ErrorCode = ForgeWorks.GlowFork.ErrorCode;
-
 using ForgeWorks.TauBetaDelta.Logging;
-using System.Text;
-using System.Runtime.CompilerServices;
 
 namespace ForgeWorks.GlowFork.Graphics;
 

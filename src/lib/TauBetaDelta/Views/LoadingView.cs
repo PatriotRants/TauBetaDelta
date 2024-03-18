@@ -6,7 +6,7 @@ using ForgeWorks.TauBetaDelta.Logging;
 
 namespace ForgeWorks.TauBetaDelta;
 
-public class SplashScreenView : GameView
+public class LoadingView : GameView
 {
     private int _vertexBufferObject;
     private int _elementBufferObject;
@@ -16,7 +16,7 @@ public class SplashScreenView : GameView
     private float[] Vertices { get; set; }
     private uint[] Indices { get; set; }
 
-    public SplashScreenView(LoadingState gameState) : base(gameState)
+    public LoadingView(LoadingState gameState) : base(gameState)
     {
         Shader = gameState.Shader;
         Texture = gameState.Textures[0];

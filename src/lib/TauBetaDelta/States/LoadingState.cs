@@ -1,9 +1,9 @@
 using OpenTK.Mathematics;
 
+using ForgeWorks.GlowFork.Graphics;
 using ErrorCode = ForgeWorks.GlowFork.ErrorCode;
 
 using ForgeWorks.TauBetaDelta.Logging;
-using ForgeWorks.GlowFork.Graphics;
 
 namespace ForgeWorks.TauBetaDelta;
 
@@ -25,7 +25,7 @@ public class LoadingState : GameState
 
         LoadSplash();
 
-        View = new SplashScreenView(this)
+        View = new LoadingView(this)
         {
             //  change the background color
             Background = new Color4(27, 27, 27, 128),
@@ -37,13 +37,46 @@ public class LoadingState : GameState
         };
         View.Load += OnViewLoaded;
 
-        LOGGER.Post(LogLevel.Default, $"{Name}.View [{((SplashScreenView)View).ClientSize};{((SplashScreenView)View).Location};{((SplashScreenView)View).ViewPort}]");
+        LOGGER.Post(LogLevel.Default, $"{Name}.View [{((LoadingView)View).ClientSize};{((LoadingView)View).Location};{((LoadingView)View).ViewPort}]");
     }
 
     public override void Init()
     {
         View.Init();
 
+        //  load content pipeline
+        LoadContent();
+
+        //  start network - local server peer by default
+        StartNetwork();
+
+        //  when loading is complete we can call the next state from here.
+    }
+    public override void Dispose()
+    {
+        // delete shader programs
+        Shader.Dispose();
+        //  unsub events
+        View.Load -= OnViewLoaded;
+        //  dispose view
+        View.Dispose();
+    }
+
+    private void LoadSplash()
+    {
+        Shader = SHADERS.LoadShader("splash.shaders");
+
+        if (ASSETS.LoadTexture("splash", out Texture _texture))
+        {
+            textures.Add(_texture);
+        }
+        else
+        {
+            //  log error condition
+        }
+    }
+    private static void LoadContent()
+    {
         //  TODO: Load assets & resources
         try
         {
@@ -78,35 +111,10 @@ public class LoadingState : GameState
             LOGGER.Post(LogLevel.Error, $"Target: '{ex.TargetSite}");
             LOGGER.Post(LogLevel.Error, ex.StackTrace);
         }
-
-        //  start server
-
-        //  start client
-
-        //  when loading is complete we can call the next state from here.
     }
-    public override void Dispose()
+    private static void StartNetwork()
     {
-        // delete shader programs
-        Shader.Dispose();
-        //  unsub events
-        View.Load -= OnViewLoaded;
-        //  dispose view
-        View.Dispose();
-    }
-
-    private void LoadSplash()
-    {
-        Shader = SHADERS.LoadShader("splash.shaders");
-
-        if (ASSETS.LoadTexture("splash", out Texture _texture))
-        {
-            textures.Add(_texture);
-        }
-        else
-        {
-            //  log error condition
-        }
+        NETWORK.StartNetwork();
     }
     private void OnViewLoaded()
     {
