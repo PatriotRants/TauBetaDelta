@@ -11,8 +11,8 @@ So ... there is a lot to be done. I'm working on issues and the project roadmap.
 
 I've streamlined the Game initialization and window creation. Also, we are displaying the temporary splash screen.
 
-**Mar 17, 2024** *[See Lidgren.Network](https://github.com/lidgren/lidgren-network-gen3/tree/master/Lidgren.Network)*  
-***TBD** Networking* is (will be) heavily influenced by the *Lidgren.Network* library.
+**Mar 17, 2024**    
+***TBD** Networking* is (will be) heavily influenced by the *Lidgren.Network* library. *[See Lidgren.Network](https://github.com/lidgren/lidgren-network-gen3/tree/master/Lidgren.Network)*
 
 Finished the basic implementation of the `Network` components: `NetPeer`, `Client`, `Server`. A couple of interfaces provided: `INetwork` and `IClient`.
 
