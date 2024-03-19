@@ -7,6 +7,7 @@ using ForgeWorks.TauBetaDelta;
 using ForgeWorks.TauBetaDelta.Logging;
 
 using ForgeWorks.ShowBird.Serialization;
+using ForgeWorks.ShowBird.Messaging;
 
 namespace ForgeWorks.ShowBird;
 
@@ -20,6 +21,7 @@ public class Network : INetwork
 
     private DateTime Start { get; set; }
     private DateTime Tick { get; set; }
+    private UpdateAgent Updater { get; set; }
 
     internal Server Server { get; private set; }
     internal Client Client { get; private set; }
@@ -80,8 +82,9 @@ public class Network : INetwork
     /// <summary>
     /// Starts the local network peers
     /// </summary>
-    void INetwork.StartNetwork(bool isLocal)
+    string INetwork.StartNetwork(UpdateAgent updateAgent, bool isLocal)
     {
+        Updater = updateAgent;
         Status = NetworkStatus.Starting;
 
         if (!isLocal)
@@ -105,7 +108,10 @@ public class Network : INetwork
         Status = NetworkStatus.Running;
         Start = DateTime.Now;
 
-        Log(LoadStatus.Ready, $"[{Start}] Network Status: {Status}");
+        string status = $"[{Start}] Network Status: {Status}";
+        Log(LoadStatus.Ready, status);
+
+        return status;
     }
     /// <summary>
     /// Requests local network peers shut down
@@ -248,5 +254,6 @@ public class Network : INetwork
     protected void Log(LoadStatus loadStatus, string logEntry)
     {
         LOGGER.Post(loadStatus, $"[{GetType().Name}.{Name}] {logEntry}");
+        Updater($"[{loadStatus}] {logEntry}");
     }
 }

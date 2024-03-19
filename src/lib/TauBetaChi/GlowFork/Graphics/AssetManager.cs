@@ -1,3 +1,4 @@
+using ForgeWorks.ShowBird.Messaging;
 using ForgeWorks.TauBetaDelta.Logging;
 
 namespace ForgeWorks.GlowFork.Graphics;
@@ -31,12 +32,13 @@ public class AssetManager
         }
     }
 
-    public bool Load()
+    public bool Load(UpdateAgent updateAgent)
     {
         //  load assets
         if (Status.condition == LoadStatus.Error)
         {
             Log(Status.condition, Status.message);
+            updateAgent($"[{Status.condition}] {Status.message}");
         }
         else
         {
@@ -48,6 +50,7 @@ public class AssetManager
 
             foreach (var file in files)
             {
+                updateAgent($"Loading [{file.name}]");
                 Texture texture = Texture.LoadFromFile(file.path);
 
                 _textures.TryAdd(file.name, texture);

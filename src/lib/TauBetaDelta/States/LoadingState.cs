@@ -4,6 +4,9 @@ using ForgeWorks.GlowFork.Graphics;
 using ErrorCode = ForgeWorks.GlowFork.ErrorCode;
 
 using ForgeWorks.TauBetaDelta.Logging;
+using ForgeWorks.GlowFork.Tasking;
+using ForgeWorks.ShowBird.Messaging;
+using ForgeWorks.GlowFork;
 
 namespace ForgeWorks.TauBetaDelta;
 
@@ -13,7 +16,11 @@ namespace ForgeWorks.TauBetaDelta;
 /// </summary>
 public class LoadingState : GameState
 {
+    //  TODO: make configurable
+    private const int NUM_TASK_AGENTS = 2;
+
     private readonly List<Texture> textures = new();
+    private readonly TaskQueue taskQueue = new(NUM_TASK_AGENTS);
 
     internal Shader Shader { get; set; }
     internal Texture[] Textures => textures.ToArray();
@@ -24,6 +31,21 @@ public class LoadingState : GameState
         Next = string.Empty;
 
         LoadSplash();
+
+        taskQueue.Enqueue(new GameTask(LoadContent)
+        {
+            Updater = (s) =>
+            {
+                LOGGER.Post(LoadStatus.Okay, $"[Updater.1] {s}");
+            }
+        });
+        taskQueue.Enqueue(new GameTask(StartNetwork)
+        {
+            Updater = (s) =>
+            {
+                LOGGER.Post(LoadStatus.Okay, $"[Updater.2] {s}");
+            }
+        });
 
         View = new LoadingView(this)
         {
@@ -42,13 +64,13 @@ public class LoadingState : GameState
 
     public override void Init()
     {
+        ManualResetEvent gateEvent = new(false);
+
         View.Init();
 
-        //  load content pipeline
-        LoadContent();
-
-        //  start network - local server peer by default
-        StartNetwork();
+        //  start game task execution
+        taskQueue.Start(gateEvent);
+        gateEvent.WaitOne();
 
         //  when loading is complete we can call the next state from here.
     }
@@ -75,14 +97,14 @@ public class LoadingState : GameState
             //  log error condition
         }
     }
-    private static void LoadContent()
+    private static string LoadContent(UpdateAgent updateAgent)
     {
         //  TODO: Load assets & resources
         try
         {
 
-            LOGGER.Post(LogLevel.Debug, ASSETS.Info);
-            if (!ASSETS.Load())
+            updateAgent($"[{LogLevel.Debug}] {ASSETS.Info}");
+            if (!ASSETS.Load(updateAgent))
             {
 
 
@@ -111,10 +133,12 @@ public class LoadingState : GameState
             LOGGER.Post(LogLevel.Error, $"Target: '{ex.TargetSite}");
             LOGGER.Post(LogLevel.Error, ex.StackTrace);
         }
+
+        return ASSETS.Info;
     }
-    private static void StartNetwork()
+    private static string StartNetwork(UpdateAgent updateAgent)
     {
-        NETWORK.StartNetwork();
+        return NETWORK.StartNetwork(updateAgent);
     }
     private void OnViewLoaded()
     {

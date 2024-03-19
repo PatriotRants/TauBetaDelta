@@ -1,3 +1,4 @@
+using ForgeWorks.ShowBird.Messaging;
 using ForgeWorks.TauBetaDelta;
 using ForgeWorks.TauBetaDelta.Extensibility;
 
@@ -33,7 +34,7 @@ public interface INetwork : IRegistryItem, IDisposable
     /// <summary>
     /// Start the network
     /// </summary>
-    internal void StartNetwork(bool isLocal = true);
+    internal string StartNetwork(UpdateAgent updateAgent, bool isLocal = true);
     /// <summary>
     /// Stop the network
     /// </summary>
