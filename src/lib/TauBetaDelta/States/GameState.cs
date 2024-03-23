@@ -17,9 +17,10 @@ public abstract partial class GameState : State, IGameState
     protected static readonly INetwork NETWORK = Registry.Get<Network>();
     protected static readonly IGame GAME = Registry.Get<Game>();
 
+    protected static readonly AssetManager ASSETS = RESOURCES.AssetManager;
+    protected static readonly FontManager FONTS = RESOURCES.FontManager;
     protected static readonly LoggerManager LOGGER = RESOURCES.LoggerManager;
     protected static readonly ShaderManager SHADERS = RESOURCES.ShaderManager;
-    protected static readonly AssetManager ASSETS = RESOURCES.AssetManager;
 
     protected GameView View { get; init; }
 

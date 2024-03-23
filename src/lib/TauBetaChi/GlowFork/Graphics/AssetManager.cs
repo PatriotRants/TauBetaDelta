@@ -3,7 +3,7 @@ using ForgeWorks.TauBetaDelta.Logging;
 
 namespace ForgeWorks.GlowFork.Graphics;
 
-public class AssetManager
+public class AssetManager : IDisposable
 {
     private static readonly Lazy<AssetManager> INSTANCE = new(() => new());
 
@@ -15,7 +15,7 @@ public class AssetManager
     internal static AssetManager Instance => INSTANCE.Value;
 
     public string ContentDirectory { get; }
-    public string Info => Status.message;
+    public string Info => $"[{Status.condition}.{Status.errCode}] {Status.message}";
 
     private AssetManager()
     {
@@ -78,5 +78,13 @@ public class AssetManager
         errCode = Status.errCode;
 
         return errCode != ErrorCode.NoErr;
+    }
+
+    public void Dispose()
+    {
+        foreach (Texture texture in _textures.Values)
+        {
+            texture.Dispose();
+        }
     }
 }

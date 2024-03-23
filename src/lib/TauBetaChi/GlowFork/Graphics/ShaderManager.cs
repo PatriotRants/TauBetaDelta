@@ -6,7 +6,7 @@ using ForgeWorks.TauBetaDelta.Logging;
 
 namespace ForgeWorks.GlowFork.Graphics;
 
-public class ShaderManager
+public class ShaderManager : IDisposable
 {
     private static readonly Lazy<ShaderManager> INSTANCE = new(() => new());
 
@@ -29,7 +29,7 @@ public class ShaderManager
     internal static ShaderManager Instance => INSTANCE.Value;
 
     public string ShaderDirectory { get; }
-    public string Info => Status.message;
+    public string Info => $"[{Status.condition}.{Status.errCode}] {Status.message}";
     public ResourceLogger Log { get; } = LoggerManager.Instance.Post;
 
     private ShaderManager()
@@ -196,5 +196,13 @@ public class ShaderManager
         GL.GetProgram(program, GetProgramParameterName.LinkStatus, out int flag);
 
         return flag != 0;
+    }
+
+    public void Dispose()
+    {
+        foreach (Shader shader in shaderPrograms.Values)
+        {
+            shader.Dispose();
+        }
     }
 }

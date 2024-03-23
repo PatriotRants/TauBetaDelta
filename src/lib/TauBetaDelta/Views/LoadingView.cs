@@ -2,15 +2,18 @@ using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.Common;
 
 using ForgeWorks.GlowFork.Graphics;
+
 using ForgeWorks.TauBetaDelta.Logging;
+using ForgeWorks.RailThorn.Controls;
+using OpenTK.Mathematics;
 
 namespace ForgeWorks.TauBetaDelta;
 
 public class LoadingView : GameView
 {
-    private int _vertexBufferObject;
-    private int _elementBufferObject;
-    private int _vertexArrayObject;
+    private int vertexBufferObject;
+    private int elementBufferObject;
+    private int vertexArrayObject;
 
     private Texture Texture { get; set; }
     private float[] Vertices { get; set; }
@@ -42,18 +45,18 @@ public class LoadingView : GameView
         Shader.Use();
 
         // create VAO to align VBO
-        _vertexArrayObject = GL.GenVertexArray();
-        GL.BindVertexArray(_vertexArrayObject);
+        vertexArrayObject = GL.GenVertexArray();
+        GL.BindVertexArray(vertexArrayObject);
 
         //  create VBO
         // bind the buffer
         // upload vertices to buffer
-        _vertexBufferObject = GL.GenBuffer();
-        GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
+        vertexBufferObject = GL.GenBuffer();
+        GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject);
         GL.BufferData(BufferTarget.ArrayBuffer, Vertices.Length * sizeof(float), Vertices, BufferUsageHint.StaticDraw);
 
-        _elementBufferObject = GL.GenBuffer();
-        GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementBufferObject);
+        elementBufferObject = GL.GenBuffer();
+        GL.BindBuffer(BufferTarget.ElementArrayBuffer, elementBufferObject);
         GL.BufferData(BufferTarget.ElementArrayBuffer, Indices.Length * sizeof(uint), Indices, BufferUsageHint.StaticDraw);
 
         //  pass vertex array to the buffer
@@ -76,7 +79,11 @@ public class LoadingView : GameView
         GL.ClearColor(Background);
 
         Texture.Use(TextureUnit.Texture0);
-
+        Container.Add(new Label("Status_1")
+        {
+            Color = Color4.PaleGoldenrod,
+            Text = "Hello, TauBeta"
+        });
         //  raise event
         base.OnLoad();
     }
@@ -93,7 +100,7 @@ public class LoadingView : GameView
         GL.Clear(ClearBufferMask.ColorBufferBit);
 
         // Bind the VAO
-        GL.BindVertexArray(_vertexArrayObject);
+        GL.BindVertexArray(vertexArrayObject);
 
         //  use the texture & shader program
         Texture.Use(TextureUnit.Texture0);

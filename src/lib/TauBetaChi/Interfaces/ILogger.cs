@@ -1,6 +1,6 @@
 namespace ForgeWorks.TauBetaDelta.Logging;
 
-public interface ILogger
+public interface ILogger : IDisposable
 {
     LogLevel LogLevel { get; }
 

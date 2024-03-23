@@ -39,6 +39,13 @@ public class LoadingState : GameState
                 LOGGER.Post(LoadStatus.Okay, $"[Updater.1] {s}");
             }
         });
+        taskQueue.Enqueue(new GameTask(LoadFonts)
+        {
+            Updater = (s) =>
+            {
+                LOGGER.Post(LoadStatus.Okay, $"[Updater.2] {s}");
+            }
+        });
         taskQueue.Enqueue(new GameTask(StartNetwork)
         {
             Updater = (s) =>
@@ -70,6 +77,7 @@ public class LoadingState : GameState
 
         //  start game task execution
         taskQueue.Start(gateEvent);
+        //  wait for taskQueue to finish
         gateEvent.WaitOne();
 
         //  when loading is complete we can call the next state from here.
@@ -96,6 +104,12 @@ public class LoadingState : GameState
         {
             //  log error condition
         }
+    }
+    private static string LoadFonts(UpdateAgent updateAgent)
+    {
+        updateAgent($"[{LogLevel.Debug}] {FONTS.Info}");
+
+        return $"Loaded {FONTS.LoadFonts(updateAgent)} fonts";
     }
     private static string LoadContent(UpdateAgent updateAgent)
     {
