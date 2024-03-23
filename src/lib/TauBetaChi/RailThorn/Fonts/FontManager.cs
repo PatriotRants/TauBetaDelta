@@ -76,12 +76,18 @@ public class FontManager : IDisposable
         Log(Status.condition, Info);
     }
 
+    /// <summary>
+    /// Loads all custom fonts and maps the default font. Loaded fonts will lazily map character sets
+    /// </summary>
+    /// <param name="updateAgent"></param>
+    /// <returns></returns>
     public int LoadFonts(UpdateAgent updateAgent)
     {
         int count = 0;
         //  default font is the only font that loads immediately
         Font defaultFont = GetDefaultFont();
-        defaultFont.Use();
+        //  causes lazy loading of the default font character set
+        _ = defaultFont.CharacterSet.Count > 0;
         updateAgent($"[FontManager] Default Font: {defaultFont.Name} {(defaultFont.IsLoaded ? "LOADED" : "ERROR")}");
 
         foreach (var font in Fonts(FontDirectory))
@@ -137,17 +143,6 @@ public class FontManager : IDisposable
             yield return fontFile;
         }
     }
-    private static nint LoadFont(nint loader, Font font)
-    {
-        FT_Error ftErr = FT_Error.FT_Err_Ignore;
-
-        if ((ftErr = FT_New_Face(loader, font.Source, 0, out nint face)) != FT_Error.FT_Err_Ok)
-        {
-            LoggerManager.Instance.Post(LoadStatus.Error, $"[FreeType] Error: {ftErr} ({font.Source})");
-        }
-
-        return face;
-    }
     private static bool TryGetFont(nint loadere, string fontFile, out Font font)
     {
         FT_Error ftErr = FT_Error.FT_Err_Ignore;
@@ -159,10 +154,7 @@ public class FontManager : IDisposable
         }
         else
         {
-            font = new Font(fontFile)
-            {
-                LoadFont = LoadFont
-            };
+            font = new Font(fontFile);
         }
 
         return font != null;

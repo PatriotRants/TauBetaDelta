@@ -1,4 +1,3 @@
-
 using System.Text;
 
 using ForgeWorks.GlowFork;
@@ -205,9 +204,12 @@ public class Network : INetwork
             byte[] rcvBuffer = new byte[MAX_PKT_SIZE];
             int bufferLen = 0;
 
-            if (Client.Sender.Connected)
             //  random intermittent exception thrown - Sender will disconnect before Receive called
-            { bufferLen = Client.Sender.Receive(rcvBuffer); }
+            // if (Client.Sender.Connected)
+            // { bufferLen = Client.Sender.Receive(rcvBuffer); }
+
+            //  changed to this to see if it makes a difference - logically, it shouldn't ... but ...
+            bufferLen = Client.Sender.Connected ? Client.Sender.Receive(rcvBuffer) : 0;
 
             received.Append(Encoding.ASCII.GetString(rcvBuffer, 0, bufferLen));
 
