@@ -1,7 +1,7 @@
 ﻿using OpenTK.Mathematics;
 using OpenTK.Graphics.OpenGL4;
 
-namespace ForgeWorks.GlowFork.Graphics;
+namespace ForgeWorks.RailThorn.Graphics;
 // A simple class meant to help create shaders.
 public class Shader : IDisposable
 {

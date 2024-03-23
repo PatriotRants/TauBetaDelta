@@ -1,12 +1,12 @@
+using OpenTK.Mathematics;
 using OpenTK.Graphics.OpenGL4;
 
 using FreeTypeSharp;
-
-using ForgeWorks.GlowFork.Graphics;
 using FreeTypeSharp.Native;
-using OpenTK.Mathematics;
 
-namespace ForgeWorks.GlowFork.Fonts;
+using ForgeWorks.RailThorn.Graphics;
+
+namespace ForgeWorks.RailThorn.Fonts;
 
 internal delegate nint LoadFont(nint loader, Font font);
 

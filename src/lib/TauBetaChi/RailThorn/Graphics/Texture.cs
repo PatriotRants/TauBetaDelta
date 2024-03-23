@@ -3,7 +3,7 @@ using PixelFormat = OpenTK.Graphics.OpenGL4.PixelFormat;
 
 using StbImageSharp;
 
-namespace ForgeWorks.GlowFork.Graphics;
+namespace ForgeWorks.RailThorn.Graphics;
 
 // A helper class, much like Shader, meant to simplify loading textures.
 public class Texture : IDisposable

@@ -1,7 +1,8 @@
+using ForgeWorks.GlowFork;
 using ForgeWorks.ShowBird.Messaging;
 using ForgeWorks.TauBetaDelta.Logging;
 
-namespace ForgeWorks.GlowFork.Graphics;
+namespace ForgeWorks.RailThorn.Graphics;
 
 public class AssetManager : IDisposable
 {

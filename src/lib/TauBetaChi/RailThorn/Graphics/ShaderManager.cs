@@ -2,9 +2,12 @@ using System.Text;
 
 using OpenTK.Graphics.OpenGL4;
 
+using ForgeWorks.GlowFork;
+using ErrorCode = ForgeWorks.GlowFork.ErrorCode;
+
 using ForgeWorks.TauBetaDelta.Logging;
 
-namespace ForgeWorks.GlowFork.Graphics;
+namespace ForgeWorks.RailThorn.Graphics;
 
 public class ShaderManager : IDisposable
 {

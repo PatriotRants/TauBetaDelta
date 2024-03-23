@@ -206,6 +206,7 @@ public class Network : INetwork
             int bufferLen = 0;
 
             if (Client.Sender.Connected)
+            //  random intermittent exception thrown - Sender will disconnect before Receive called
             { bufferLen = Client.Sender.Receive(rcvBuffer); }
 
             received.Append(Encoding.ASCII.GetString(rcvBuffer, 0, bufferLen));

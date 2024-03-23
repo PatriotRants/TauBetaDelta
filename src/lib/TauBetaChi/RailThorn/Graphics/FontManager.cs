@@ -2,13 +2,13 @@ using FreeTypeSharp;
 using FreeTypeSharp.Native;
 using static FreeTypeSharp.Native.FT;
 
-using ForgeWorks.GlowFork.Fonts;
+using ForgeWorks.GlowFork;
 
 using ForgeWorks.ShowBird.Messaging;
 
 using ForgeWorks.TauBetaDelta.Logging;
 
-namespace ForgeWorks.GlowFork.Graphics;
+namespace ForgeWorks.RailThorn.Fonts;
 
 public class FontManager : IDisposable
 {
