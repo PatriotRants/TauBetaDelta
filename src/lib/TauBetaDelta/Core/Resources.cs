@@ -14,13 +14,17 @@ public class Resources : IRegistryItem, IDisposable
     /// </summary>
     public string Name { get; }
     /// <summary>
-    /// Get the current <see cref="LoggerManager.Instance"/>
-    /// </summary>
-    public LoggerManager LoggerManager { get; }
-    /// <summary>
     /// Get the current <see cref="AssetManager.Instance"/>
     /// </summary>
     public AssetManager AssetManager { get; }
+    /// <summary>
+    /// Get the current <see cref="FontManager.Instance"/>
+    /// </summary>
+    public FontManager FontManager { get; }
+    /// <summary>
+    /// Get the current <see cref="LoggerManager.Instance"/>
+    /// </summary>
+    public LoggerManager LoggerManager { get; }
     /// <summary>
     /// Get the current <see cref="ShaderManager.Instance"/>
     /// </summary>
@@ -30,8 +34,9 @@ public class Resources : IRegistryItem, IDisposable
     {
         Name = "Resources";
 
-        LoggerManager = GetSingleton<LoggerManager>();
         AssetManager = GetSingleton<AssetManager>();
+        FontManager = GetSingleton<FontManager>();
+        LoggerManager = GetSingleton<LoggerManager>();
         ShaderManager = GetSingleton<ShaderManager>();
     }
 
@@ -53,8 +58,9 @@ public class Resources : IRegistryItem, IDisposable
     public void Dispose()
     {
         //  TODO: implement dispose on resource items
-        // LoggerManager.Dispose();
-        // AssetManager.Dispose();
-        // ShaderManager.Dispose();
+        AssetManager.Dispose();
+        FontManager.Dispose();
+        LoggerManager.Dispose();
+        ShaderManager.Dispose();
     }
 }

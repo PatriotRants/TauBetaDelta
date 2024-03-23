@@ -7,6 +7,7 @@ using ForgeWorks.GlowFork.Automata;
 
 using ForgeWorks.TauBetaDelta.Collections;
 using ForgeWorks.TauBetaDelta.Extensibility;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace ForgeWorks.TauBetaDelta;
 
@@ -84,6 +85,14 @@ internal sealed partial class Game : IRegistryItem, IGame
     internal void CenterWindow()
     {
         _window.CenterWindow();
+    }
+    internal KeyboardState GetKeyboardState()
+    {
+        return _window.KeyboardState;
+    }
+    internal MouseState GetMouseState()
+    {
+        return _window.MouseState;
     }
 
     /// <summary>

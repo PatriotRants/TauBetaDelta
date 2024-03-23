@@ -11,6 +11,7 @@ using ForgeWorks.GlowFork.Graphics;
 using ForgeWorks.TauBetaDelta.Logging;
 using ForgeWorks.TauBetaDelta.Collections;
 using ForgeWorks.TauBetaDelta.Presentation;
+using ForgeWorks.RailThorn.Controls;
 
 namespace ForgeWorks.TauBetaDelta;
 
@@ -23,6 +24,11 @@ public abstract class GameView : IView
     protected static readonly ShaderManager SHADERS = RESOURCES.ShaderManager;
     protected static readonly AssetManager ASSETS = RESOURCES.AssetManager;
 
+    protected List<Control> Container { get; } = new();
+
+    private IGLFWGraphicsContext _context => GAME.WindowContext;
+
+    #region Window Events
     /// <summary>
     /// <inheritdoc cref="GameWindow.Load"/>
     /// </summary>
@@ -115,9 +121,12 @@ public abstract class GameView : IView
     /// <inheritdoc cref="NativeWindow.FileDrop"/>
     /// </summary>
     public event Action<FileDropEventArgs> FileDrop;
+    #endregion
 
-    private IGLFWGraphicsContext _context => GAME.WindowContext;
+    public KeyboardState KeyboardState => GAME.GetKeyboardState();
+    public MouseState MouseState => GAME.GetMouseState();
 
+    #region Window Properties
     protected GameState State { get; }
 
     /// <summary>
@@ -160,6 +169,7 @@ public abstract class GameView : IView
     /// Get the current View's Name
     /// </summary>
     public string Name => State.Name;
+    #endregion
 
     protected GameView(GameState gameState)
     {

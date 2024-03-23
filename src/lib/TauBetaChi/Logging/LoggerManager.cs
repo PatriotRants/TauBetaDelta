@@ -5,7 +5,7 @@ namespace ForgeWorks.TauBetaDelta.Logging;
 
 public delegate void ResourceLogger(LoadStatus status, string logEntry);
 
-public class LoggerManager
+public class LoggerManager : IDisposable
 {
     private static readonly Lazy<LoggerManager> INSTANCE = new(() => new());
 
@@ -51,6 +51,14 @@ public class LoggerManager
                 break;
         }
     }
+
+    public void Dispose()
+    {
+        foreach (ILogger logger in Loggers)
+        {
+            logger.Dispose();
+        }
+    }
 }
 
 internal class DefaultLogger : ILogger
@@ -66,5 +74,10 @@ internal class DefaultLogger : ILogger
     public void WriteLine(string message)
     {
         Console.WriteLine(message);
+    }
+
+    public void Dispose()
+    {
+        //  nothing to do here ...
     }
 }

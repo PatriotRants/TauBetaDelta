@@ -2,6 +2,9 @@ using System.ComponentModel;
 
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
+using OpenTK.Windowing.GraphicsLibraryFramework;
+
+using ForgeWorks.RailThorn;
 
 namespace ForgeWorks.TauBetaDelta.Presentation;
 
@@ -111,6 +114,8 @@ public interface IView : IDisposable
     WindowBorder WindowBorder { get; set; }
     WindowState WindowState { get; set; }
     bool IsVisible { get; set; }
+    MouseState MouseState { get; }
+    KeyboardState KeyboardState { get; }
 
     void OnRenderFrame(FrameEventArgs args);
     void OnUpdateFrame(FrameEventArgs args);

@@ -6,7 +6,7 @@ using StbImageSharp;
 namespace ForgeWorks.GlowFork.Graphics;
 
 // A helper class, much like Shader, meant to simplify loading textures.
-public class Texture
+public class Texture : IDisposable
 {
     public readonly int Handle;
 
@@ -84,5 +84,10 @@ public class Texture
     {
         GL.ActiveTexture(unit);
         GL.BindTexture(TextureTarget.Texture2D, Handle);
+    }
+
+    public void Dispose()
+    {
+        GL.DeleteTexture(Handle);
     }
 }
