@@ -25,7 +25,6 @@ public abstract class TextRenderer : RendererControl
         height = container.Height;
 
         shader = SHADERS.LoadShader("label.shaders");
-        shader.Use();
     }
 
     public override void Init()
@@ -33,28 +32,19 @@ public abstract class TextRenderer : RendererControl
         //  get the font's character map
         characterMap = Font.CharacterSet;
 
-        //  configure everything for rendering Teext
+        //  configure everything for rendering Text
         // GL.Enable(EnableCap.CullFace);
-        // GL.Enable(EnableCap.Blend);
-        GL.BlendFunc(BlendingFactor.Src1Alpha, BlendingFactor.OneMinusSrcAlpha);
+        GL.Enable(EnableCap.Blend);
+        GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
         projection = Matrix4.CreateOrthographic(width, height, 0.0f, 0.0f);
         shader.SetMatrix4("projection", projection);
 
-        //  create VAO & VBO
+        //  create VAO & VBO for texture quads
         GL.GenVertexArrays(1, out _vao);
         GL.GenBuffers(1, out _vbo);
         GL.BindVertexArray(_vao);
         GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
-
-        /* **
-            glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
-            glEnableVertexAttribArray(0);
-            glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
-            glBindVertexArray(0);
-        ** */
-        //  not sure about 'nint.Zero' ... c sample uses NULL
-        GL.BufferData(BufferTarget.ArrayBuffer, sizeof(float) * 6 * 4, nint.Zero, BufferUsageHint.DynamicDraw);
+        GL.BufferData(BufferTarget.ArrayBuffer, sizeof(float) * 24, nint.Zero, BufferUsageHint.DynamicDraw);
         GL.EnableVertexAttribArray(0);
         GL.VertexAttribPointer(0, 4, VertexAttribPointerType.Float, false, 4 * sizeof(float), 0);
         GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
@@ -77,6 +67,8 @@ public abstract class TextRenderer : RendererControl
     }
     public override void Render()
     {
+        shader.Use();
+
         // iterate character map
         var text = Text.ToArray();
         var ndx = 0;
@@ -85,11 +77,11 @@ public abstract class TextRenderer : RendererControl
 
         while (ndx < text.Length)
         {
-            float[] vertices = MapText(text[ndx], ref x, ref y, out uint textureId);
+            float[,] vertices = MapText(text[ndx], ref x, ref y, out uint textureId);
 
             GL.BindTexture(TextureTarget.Texture2D, textureId);
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
-            GL.BufferSubData(BufferTarget.ArrayBuffer, 0, sizeof(float) * 6 * 4, vertices);
+            GL.BufferSubData(BufferTarget.ArrayBuffer, 0, sizeof(float) * vertices.Length, vertices);
 
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
             GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
@@ -100,11 +92,10 @@ public abstract class TextRenderer : RendererControl
         GL.BindVertexArray(0);
         GL.BindTexture(TextureTarget.Texture2D, 0);
 
-        shader.Use();
-
+        // shader.Use();
     }
 
-    private float[] MapText(char c, ref float x, ref float y, out uint textureId)
+    private float[,] MapText(char c, ref float x, ref float y, out uint textureId)
     {
         Font.Character character = characterMap[c];
         textureId = character.TextureId;
@@ -116,13 +107,13 @@ public abstract class TextRenderer : RendererControl
         float w = map.w * Scale;
         float h = map.h * Scale;
 
-        float[] vertices = new float[]{
-            xpos,     ypos + h,   0.0f, 0.0f,
-            xpos,     ypos,       0.0f, 1.0f,
-            xpos + w, ypos,       1.0f, 1.0f ,
-            xpos,     ypos + h,   0.0f, 0.0f ,
-            xpos + w, ypos,       1.0f, 1.0f ,
-            xpos + w, ypos + h,   1.0f, 0.0f
+        float[,] vertices = new float[6, 4]{
+            {xpos,     ypos + h,   0.0f, 0.0f},
+            {xpos,     ypos,       0.0f, 1.0f},
+            {xpos + w, ypos,       1.0f, 1.0f},
+            {xpos,     ypos + h,   0.0f, 0.0f},
+            {xpos + w, ypos,       1.0f, 1.0f},
+            {xpos + w, ypos + h,   1.0f, 0.0f}
         };
 
         /*         

@@ -52,10 +52,12 @@ public class LoadingState : GameState
         {
             //  change the background color
             Background = new Color4(27, 27, 27, 128),
+            //  inherit previous state window settings
             ViewPort = GAME.GetState().View.ViewPort,
             ClientSize = GAME.GetState().View.ClientSize,
             WindowBorder = GAME.GetState().View.WindowBorder,
             WindowState = GAME.GetState().View.WindowState,
+            //  set visible
             IsVisible = true,
         };
         View.Load += OnViewLoaded;

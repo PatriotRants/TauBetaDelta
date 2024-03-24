@@ -30,7 +30,8 @@ public class LoadingView : GameView
         StatusOne = new Label(this, "Status_1")
         {
             Color = Color4.PaleGoldenrod,
-            Text = "Hello, TauBetaDelta!!!"
+            Text = "AaBb",
+            Location = (25, 50)
         };
 
         OnLoad();
@@ -43,7 +44,7 @@ public class LoadingView : GameView
         GL.ClearColor(Background);
 
         //  initi controls here
-        Splash.Init();
+        // Splash.Init();
         StatusOne.Init();
 
         //  raise event
@@ -59,7 +60,7 @@ public class LoadingView : GameView
     public override void OnUpdateFrame(FrameEventArgs args)
     {
         //  update controls
-        Splash.Update();
+        // Splash.Update();
         StatusOne.Update();
     }
     public override void OnRenderFrame(FrameEventArgs args)
@@ -68,7 +69,7 @@ public class LoadingView : GameView
         GL.Clear(ClearBufferMask.ColorBufferBit);
 
         //  redner controls
-        Splash.Render();
+        // Splash.Render();
         StatusOne.Render();
 
         //  swap buffers
