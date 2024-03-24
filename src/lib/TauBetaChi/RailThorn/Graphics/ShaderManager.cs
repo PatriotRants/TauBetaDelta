@@ -84,7 +84,7 @@ public class ShaderManager : IDisposable
                 GL.CompileShader(handle);
                 if (!ValidateShader(handle, out string shaderLog))
                 {
-                    Log(LoadStatus.Error, shaderLog);
+                    Log(LoadStatus.Error, $"{nameof(LoadShader)}.{shaderFile}] {shaderLog}");
                     handle = -1;
                 }
 

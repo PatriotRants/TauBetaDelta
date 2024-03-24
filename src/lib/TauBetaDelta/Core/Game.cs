@@ -24,6 +24,7 @@ internal sealed partial class Game : IRegistryItem, IGame
     public GameState GameState => StateMachine.GetCurrent<GameState>();
     public string Name { get; }
     public string Title { get; }
+    public RunMode RunMode { get; } = RunMode.Debug;
 
     internal Game(string name, string title)
     {

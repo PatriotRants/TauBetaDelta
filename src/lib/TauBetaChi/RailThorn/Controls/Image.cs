@@ -90,14 +90,3 @@ public abstract class ImageRenderer : RendererControl
         GL.DrawElements(PrimitiveType.Triangles, _indices.Length, DrawElementsType.UnsignedInt, 0);
     }
 }
-
-public abstract class RendererControl : Control
-{
-    protected static readonly ShaderManager SHADERS = ShaderManager.Instance;
-    protected static readonly AssetManager ASSETS = AssetManager.Instance;
-
-    protected Shader shader { get; init; }
-    protected Texture texture { get; init; }
-
-    protected RendererControl(string name) : base(name) { }
-}

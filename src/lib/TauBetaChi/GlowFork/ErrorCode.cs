@@ -6,3 +6,9 @@ public enum ErrorCode
     DirNotFound = 1001,
     FTLoadErr = 2001,
 }
+
+public enum RunMode
+{
+    Normal = 0,
+    Debug = 1,
+}

@@ -1,7 +1,5 @@
 using OpenTK.Mathematics;
 
-using ForgeWorks.RailThorn.Graphics;
-
 using ForgeWorks.ShowBird.Messaging;
 
 using ForgeWorks.GlowFork;
@@ -96,7 +94,6 @@ public class LoadingState : GameState
         //  TODO: Load assets & resources
         try
         {
-
             updateAgent($"[{LogLevel.Debug}] {ASSETS.Info}");
             if (!ASSETS.Load(updateAgent))
             {

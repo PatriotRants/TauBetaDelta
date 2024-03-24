@@ -7,11 +7,11 @@ public delegate void ResourceLogger(LoadStatus status, string logEntry);
 
 public class LoggerManager : IDisposable
 {
-    private static readonly Lazy<LoggerManager> INSTANCE = new(() => new());
+    private static readonly Lazy<LoggerManager> _LOGGER_MGR = new(() => new());
 
     private List<ILogger> Loggers { get; } = new();
 
-    internal static LoggerManager Instance => INSTANCE.Value;
+    internal static LoggerManager Instance => _LOGGER_MGR.Value;
 
     private LoggerManager()
     {

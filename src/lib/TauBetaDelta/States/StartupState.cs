@@ -1,6 +1,8 @@
 using OpenTK.Windowing.Common;
 
 using ForgeWorks.GlowFork;
+using OpenTK.Graphics.OpenGL4;
+using ForgeWorks.GlowFork.Logging;
 
 namespace ForgeWorks.TauBetaDelta;
 
@@ -39,6 +41,13 @@ public class StartupState : GameState
 
     private void OnViewLoaded()
     {
+        //  initialize GL error callback - see https://opentk.net/learn/appendix_opengl/debug_callback.html?tabs=debug-context-3%2Cdelegate-gl%2Cenable-gl
+        if (GAME.RunMode == RunMode.Debug)
+        {
+            GL.DebugMessageCallback(GLLogger.DebugMessageDelegate, IntPtr.Zero);
+            GL.Enable(EnableCap.DebugOutput);
+        }
+
         //  TODO: install AssetManager
         ChangeState(Next);
     }

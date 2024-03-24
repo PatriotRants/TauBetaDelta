@@ -20,17 +20,18 @@ public class LoadingView : GameView
     {
         //  add Image control
         Splash = new Image("Splash", "splash");
+    }
+
+    public override void Init()
+    {
+        LOGGER.Post(LogLevel.Default, $"{Name}View.{nameof(Init)}");
+
         // add Label control
         StatusOne = new Label(this, "Status_1")
         {
             Color = Color4.PaleGoldenrod,
             Text = "Hello, TauBetaDelta!!!"
         };
-    }
-
-    public override void Init()
-    {
-        LOGGER.Post(LogLevel.Default, $"{Name}View.{nameof(Init)}");
 
         OnLoad();
     }
