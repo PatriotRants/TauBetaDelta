@@ -21,18 +21,12 @@ public class LoadingState : GameState
     //  TODO: make configurable
     private const int NUM_TASK_AGENTS = 2;
 
-    private readonly List<Texture> textures = new();
     private readonly TaskQueue taskQueue = new(NUM_TASK_AGENTS);
-
-    internal Shader Shader { get; set; }
-    internal Texture[] Textures => textures.ToArray();
 
     public LoadingState() : base()
     {
         Name = nameof(LoadingState);
         Next = string.Empty;
-
-        LoadSplash();
 
         taskQueue.Enqueue(new GameTask(LoadContent)
         {
@@ -86,26 +80,10 @@ public class LoadingState : GameState
     }
     public override void Dispose()
     {
-        // delete shader programs
-        Shader.Dispose();
         //  unsub events
         View.Load -= OnViewLoaded;
         //  dispose view
         View.Dispose();
-    }
-
-    private void LoadSplash()
-    {
-        Shader = SHADERS.LoadShader("splash.shaders");
-
-        if (ASSETS.LoadTexture("splash", out Texture _texture))
-        {
-            textures.Add(_texture);
-        }
-        else
-        {
-            //  log error condition
-        }
     }
     private static string LoadFonts(UpdateAgent updateAgent)
     {

@@ -25,8 +25,6 @@ public class ShaderManager : IDisposable
     };
     private static readonly string[] TAGS = TAGTYPES.Keys.ToArray();
 
-    private readonly Dictionary<string, Shader> shaderPrograms = new();
-
     private (LoadStatus condition, ErrorCode errCode, string message) Status { get; set; }
 
     internal static ShaderManager Instance => INSTANCE.Value;
@@ -99,25 +97,9 @@ public class ShaderManager : IDisposable
                 Log(LoadStatus.Error, programLog);
                 shader = null;
             }
-            else
-            {
-                shaderPrograms.Add(shaderName, shader);
-            }
         }
 
         return shader;
-    }
-    /// <summary>
-    /// Get a shader program by name
-    /// </summary>
-    public Shader GetShader(string programName)
-    {
-        if (shaderPrograms.TryGetValue(programName, out Shader shader))
-        {
-            return shader;
-        }
-
-        return null;
     }
     /// <summary>
     /// Get the current ShaderManager error status
@@ -203,9 +185,6 @@ public class ShaderManager : IDisposable
 
     public void Dispose()
     {
-        foreach (Shader shader in shaderPrograms.Values)
-        {
-            shader.Dispose();
-        }
+        //  ???
     }
 }

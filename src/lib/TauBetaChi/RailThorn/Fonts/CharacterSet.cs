@@ -1,16 +1,24 @@
 using System.Collections;
+using OpenTK.Mathematics;
 
 namespace ForgeWorks.RailThorn.Fonts;
 
-public class CharacterSet : IReadOnlyCollection<Font.Character>
+public class CharacterSet : ICharacterSet
 {
-    private Font.Character[] set;
+    private readonly Dictionary<char, Font.Character> set;
 
-    public int Count => set.Length;
-
-    public CharacterSet(Font.Character[] characters)
+    public string Name { get; }
+    public Font.Character this[char c]
     {
-        set = characters;
+        get => set[c];
+    }
+    public int Count => set.Count;
+
+    public CharacterSet(string name, Font.Character[] characters)
+    {
+        Name = name;
+        set = characters
+            .ToDictionary(k => k.Glyph, v => v);
     }
 
     public IEnumerator<Font.Character> GetEnumerator()
@@ -23,5 +31,19 @@ public class CharacterSet : IReadOnlyCollection<Font.Character>
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
+    }
+}
+
+public interface ICharacterSet : IReadOnlyCollection<Font.Character>
+{
+    string Name { get; }
+    Font.Character this[char c] { get; }
+}
+
+public static class FontCharacterExtensions
+{
+    public static (float xpos, float ypos, float w, float h) GetMapping(this Font.Character ch)
+    {
+        return (ch.Bearing.X, ch.Size.Y - ch.Bearing.Y, ch.Size.X, ch.Size.Y);
     }
 }

@@ -18,7 +18,7 @@ public class Font
     internal string Source => FontFile;
 
     public string Name { get; }
-    public IReadOnlyCollection<Character> CharacterSet => _characterSet.Value;
+    public ICharacterSet CharacterSet => _characterSet.Value;
     public bool IsLoaded => characterSet?.Count > 0;
 
     public Font(string fontFile)
@@ -47,7 +47,7 @@ public class Font
         {
             using (var mapper = new CharacterMapper(LOADER.Native, FontFile))
             {
-                characterSet = new(mapper.MapFont());
+                characterSet = new(Name, mapper.MapFont());
             }
         }
 

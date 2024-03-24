@@ -15,7 +15,7 @@ using ForgeWorks.TauBetaDelta.Presentation;
 
 namespace ForgeWorks.TauBetaDelta;
 
-public abstract class GameView : IView
+public abstract class GameView : IView, IViewContainer
 {
     private static readonly Resources RESOURCES = Registry.Get<Resources>();
     private static readonly Game GAME = Registry.Get<Game>();
@@ -125,6 +125,9 @@ public abstract class GameView : IView
 
     public KeyboardState KeyboardState => GAME.GetKeyboardState();
     public MouseState MouseState => GAME.GetMouseState();
+
+    public float Width => ClientSize.X;
+    public float Height => ClientSize.Y;
 
     #region Window Properties
     protected GameState State { get; }

@@ -11,4 +11,17 @@ public abstract class Control
     {
         Name = name;
     }
+
+    /// <summary>
+    /// Control initialization
+    /// </summary>
+    public abstract void Init();
+    /// <summary>
+    /// Update
+    /// </summary>
+    public virtual void Update() { }
+    /// <summary>
+    /// Render
+    /// </summary>
+    public virtual void Render() { }
 }

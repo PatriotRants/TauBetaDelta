@@ -208,15 +208,21 @@ public class Network : INetwork
             // if (Client.Sender.Connected)
             // { bufferLen = Client.Sender.Receive(rcvBuffer); }
 
-            //  changed to this to see if it makes a difference - logically, it shouldn't ... but ...
-            bufferLen = Client.Sender.Connected ? Client.Sender.Receive(rcvBuffer) : 0;
-
-            received.Append(Encoding.ASCII.GetString(rcvBuffer, 0, bufferLen));
-
-            if (bufferLen > 0)
+            try
             {
-                Log(LoadStatus.Okay, $"{nameof(Client)} <- {received}");
-                received.Clear();
+                bufferLen = Client.Sender.Connected ? Client.Sender.Receive(rcvBuffer) : 0;
+                received.Append(Encoding.ASCII.GetString(rcvBuffer, 0, bufferLen));
+
+                if (bufferLen > 0)
+                {
+                    Log(LoadStatus.Okay, $"{nameof(Client)} <- {received}");
+                    received.Clear();
+                }
+
+            }
+            catch (Exception)
+            {
+                break;
             }
         }
     }
