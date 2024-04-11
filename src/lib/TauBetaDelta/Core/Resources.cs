@@ -1,13 +1,14 @@
 using System.Reflection;
 
-using ForgeWorks.GlowFork.Graphics;
+using ForgeWorks.RailThorn.Fonts;
+using ForgeWorks.RailThorn.Graphics;
 
 using ForgeWorks.TauBetaDelta.Logging;
 using ForgeWorks.TauBetaDelta.Extensibility;
 
 namespace ForgeWorks.TauBetaDelta;
 
-public class Resources : IRegistryItem, IDisposable
+public class Resources : IRegistryItem
 {
     /// <summary>
     /// <inheritdoc />
@@ -34,9 +35,10 @@ public class Resources : IRegistryItem, IDisposable
     {
         Name = "Resources";
 
+        //  first to be initialized to get logging up ASAP
+        LoggerManager = GetSingleton<LoggerManager>();
         AssetManager = GetSingleton<AssetManager>();
         FontManager = GetSingleton<FontManager>();
-        LoggerManager = GetSingleton<LoggerManager>();
         ShaderManager = GetSingleton<ShaderManager>();
     }
 
@@ -55,12 +57,13 @@ public class Resources : IRegistryItem, IDisposable
         return (TSingleton)instance.GetValue(null);
     }
 
-    public void Dispose()
+    public void Unload(AutoResetEvent taskEvent)
     {
-        //  TODO: implement dispose on resource items
-        AssetManager.Dispose();
-        FontManager.Dispose();
-        LoggerManager.Dispose();
-        ShaderManager.Dispose();
+        //  unload/dispose resource items
+        AssetManager.Unload(taskEvent);
+        FontManager.Unload(taskEvent);
+        ShaderManager.Unload(taskEvent);
+
+        taskEvent.Set();
     }
 }

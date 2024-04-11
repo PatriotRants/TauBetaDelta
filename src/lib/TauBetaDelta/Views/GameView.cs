@@ -6,16 +6,17 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
-using ForgeWorks.GlowFork.Graphics;
+using ForgeWorks.RailThorn;
+using ForgeWorks.RailThorn.Controls;
+using ForgeWorks.RailThorn.Graphics;
 
 using ForgeWorks.TauBetaDelta.Logging;
 using ForgeWorks.TauBetaDelta.Collections;
 using ForgeWorks.TauBetaDelta.Presentation;
-using ForgeWorks.RailThorn.Controls;
 
 namespace ForgeWorks.TauBetaDelta;
 
-public abstract class GameView : IView
+public abstract class GameView : IView, IViewContainer
 {
     private static readonly Resources RESOURCES = Registry.Get<Resources>();
     private static readonly Game GAME = Registry.Get<Game>();
@@ -123,8 +124,13 @@ public abstract class GameView : IView
     public event Action<FileDropEventArgs> FileDrop;
     #endregion
 
+    protected RunMode RunMode => GAME.RunMode;
+
     public KeyboardState KeyboardState => GAME.GetKeyboardState();
     public MouseState MouseState => GAME.GetMouseState();
+
+    public float Width => ClientSize.X;
+    public float Height => ClientSize.Y;
 
     #region Window Properties
     protected GameState State { get; }

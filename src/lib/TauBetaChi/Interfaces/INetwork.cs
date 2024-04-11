@@ -4,7 +4,7 @@ using ForgeWorks.TauBetaDelta.Extensibility;
 
 namespace ForgeWorks.ShowBird;
 
-public interface INetwork : IRegistryItem, IDisposable
+public interface INetwork : IRegistryItem
 {
     /// <summary>
     /// Get the Client interface
@@ -30,6 +30,13 @@ public interface INetwork : IRegistryItem, IDisposable
     /// Get the <see cref="Network.Time"/> updated to sync with <see cref="GlowFork.Clock"/>
     /// </summary>
     DateTime Time { get; }
+    /// <summary>
+    /// Determine if the Network is available
+    /// <para>
+    /// TRUE if <see cref="Network.Client"/> was instantiated; otherwise FALSE
+    /// </para>
+    /// </summary>
+    bool IsAvailable { get; }
 
     /// <summary>
     /// Start the network

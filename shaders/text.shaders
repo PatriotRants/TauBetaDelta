@@ -1,0 +1,34 @@
+[vertex]
+#version 460
+
+layout (location = 0) in vec2 in_pos;
+layout (location = 1) in vec2 in_uv;
+
+out vec2 vUV;
+
+layout (location = 0) uniform mat4 model;
+layout (location = 1) uniform mat4 projection;
+
+void main()
+{
+    vUV         = in_uv.xy;
+    gl_Position = projection * model * vec4(in_pos.xy, 0.0, 1.0);
+}
+
+[fragment]
+#version 460
+
+in vec2 vUV;
+
+layout (binding = 0) uniform sampler2D u_texture;
+
+layout (location = 2) uniform vec3 textColor;
+
+out vec4 fragColor;
+
+void main()
+{
+    vec2 uv = vUV.xy;
+    float text = texture(u_texture, uv).r;
+    fragColor = vec4(textColor.rgb*text, text);
+}

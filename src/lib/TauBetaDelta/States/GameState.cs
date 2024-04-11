@@ -1,7 +1,9 @@
 using ForgeWorks.ShowBird;
 
 using ForgeWorks.GlowFork.Automata;
-using ForgeWorks.GlowFork.Graphics;
+
+using ForgeWorks.RailThorn.Fonts;
+using ForgeWorks.RailThorn.Graphics;
 
 using ForgeWorks.TauBetaDelta.Logging;
 using ForgeWorks.TauBetaDelta.Collections;
@@ -31,10 +33,13 @@ public abstract partial class GameState : State, IGameState
 
     public abstract void Init();
     public abstract void Dispose();
+    public virtual void BeginShutDown()
+    {
+        ChangeState(nameof(ShutDownState));
+    }
 
     protected void ChangeState(string nextState)
     {
         GAME.ChangeState(nextState);
     }
-
 }

@@ -1,12 +1,13 @@
 using OpenTK.Mathematics;
 
-using ForgeWorks.GlowFork.Graphics;
-using ErrorCode = ForgeWorks.GlowFork.ErrorCode;
+using ForgeWorks.ShowBird.Messaging;
+
+using ForgeWorks.GlowFork.Tasking;
+
+using ForgeWorks.RailThorn;
+using ErrorCode = ForgeWorks.RailThorn.ErrorCode;
 
 using ForgeWorks.TauBetaDelta.Logging;
-using ForgeWorks.GlowFork.Tasking;
-using ForgeWorks.ShowBird.Messaging;
-using ForgeWorks.GlowFork;
 
 namespace ForgeWorks.TauBetaDelta;
 
@@ -19,18 +20,12 @@ public class LoadingState : GameState
     //  TODO: make configurable
     private const int NUM_TASK_AGENTS = 2;
 
-    private readonly List<Texture> textures = new();
     private readonly TaskQueue taskQueue = new(NUM_TASK_AGENTS);
-
-    internal Shader Shader { get; set; }
-    internal Texture[] Textures => textures.ToArray();
 
     public LoadingState() : base()
     {
         Name = nameof(LoadingState);
         Next = string.Empty;
-
-        LoadSplash();
 
         taskQueue.Enqueue(new GameTask(LoadContent)
         {
@@ -58,10 +53,12 @@ public class LoadingState : GameState
         {
             //  change the background color
             Background = new Color4(27, 27, 27, 128),
+            //  inherit previous state window settings
             ViewPort = GAME.GetState().View.ViewPort,
             ClientSize = GAME.GetState().View.ClientSize,
             WindowBorder = GAME.GetState().View.WindowBorder,
             WindowState = GAME.GetState().View.WindowState,
+            //  set visible
             IsVisible = true,
         };
         View.Load += OnViewLoaded;
@@ -84,27 +81,12 @@ public class LoadingState : GameState
     }
     public override void Dispose()
     {
-        // delete shader programs
-        Shader.Dispose();
         //  unsub events
         View.Load -= OnViewLoaded;
         //  dispose view
         View.Dispose();
     }
 
-    private void LoadSplash()
-    {
-        Shader = SHADERS.LoadShader("splash.shaders");
-
-        if (ASSETS.LoadTexture("splash", out Texture _texture))
-        {
-            textures.Add(_texture);
-        }
-        else
-        {
-            //  log error condition
-        }
-    }
     private static string LoadFonts(UpdateAgent updateAgent)
     {
         updateAgent($"[{LogLevel.Debug}] {FONTS.Info}");
@@ -116,7 +98,6 @@ public class LoadingState : GameState
         //  TODO: Load assets & resources
         try
         {
-
             updateAgent($"[{LogLevel.Debug}] {ASSETS.Info}");
             if (!ASSETS.Load(updateAgent))
             {
@@ -130,7 +111,7 @@ public class LoadingState : GameState
                             throw new DirectoryNotFoundException(ASSETS.Info);
 
                         //  break;
-                        case ErrorCode.NoErr:
+                        case ErrorCode.Ok:
                         default:
                             //  nothing to do ... ???
 
@@ -142,17 +123,16 @@ public class LoadingState : GameState
         }
         catch (DirectoryNotFoundException ex)
         {
-            LOGGER.Post(LogLevel.Error, ex.Message);
-            LOGGER.Post(LogLevel.Error, $"Source: '{ex.Source}'");
-            LOGGER.Post(LogLevel.Error, $"Target: '{ex.TargetSite}");
-            LOGGER.Post(LogLevel.Error, ex.StackTrace);
+            LOGGER.Post(ex, ex.Message);
         }
 
         return ASSETS.Info;
     }
     private static string StartNetwork(UpdateAgent updateAgent)
     {
-        return NETWORK.StartNetwork(updateAgent);
+        updateAgent(NETWORK.StartNetwork(updateAgent));
+
+        return "Network Start Up Complete";
     }
     private void OnViewLoaded()
     {

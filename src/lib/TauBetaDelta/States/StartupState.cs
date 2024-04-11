@@ -1,6 +1,8 @@
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.Common;
 
-using ForgeWorks.GlowFork;
+using ForgeWorks.RailThorn;
+using ForgeWorks.RailThorn.Logging;
 
 namespace ForgeWorks.TauBetaDelta;
 
@@ -10,6 +12,9 @@ namespace ForgeWorks.TauBetaDelta;
 /// </summary>
 public class StartupState : GameState
 {
+    private const int DEFAULT_WIDTH = 800;
+    private const int DEFAULT_HEIGHT = 600;
+
     public StartupState() : base()
     {
         Name = nameof(StartupState);
@@ -17,9 +22,9 @@ public class StartupState : GameState
 
         View = new StartupView(this)
         {
-            ClientSize = (800, 600),
-            ViewPort = (800, 600),
-            WindowBorder = WindowBorder.Hidden,
+            ClientSize = (DEFAULT_WIDTH, DEFAULT_HEIGHT),
+            ViewPort = (DEFAULT_WIDTH, DEFAULT_HEIGHT),
+            WindowBorder = WindowBorder.Resizable,
             WindowState = WindowState.Normal,
             IsVisible = false
         };
@@ -39,6 +44,13 @@ public class StartupState : GameState
 
     private void OnViewLoaded()
     {
+        //  initialize GL error callback - see https://opentk.net/learn/appendix_opengl/debug_callback.html?tabs=debug-context-3%2Cdelegate-gl%2Cenable-gl
+        if (GAME.RunMode == RunMode.Debug)
+        {
+            GL.DebugMessageCallback(GLLogger.DebugMessageDelegate, IntPtr.Zero);
+            GL.Enable(EnableCap.DebugOutput);
+        }
+
         //  TODO: install AssetManager
         ChangeState(Next);
     }
