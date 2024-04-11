@@ -33,10 +33,13 @@ public abstract partial class GameState : State, IGameState
 
     public abstract void Init();
     public abstract void Dispose();
+    public virtual void BeginShutDown()
+    {
+        ChangeState(nameof(ShutDownState));
+    }
 
     protected void ChangeState(string nextState)
     {
         GAME.ChangeState(nextState);
     }
-
 }

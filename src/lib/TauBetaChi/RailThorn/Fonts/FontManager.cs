@@ -1,16 +1,12 @@
-using FreeTypeSharp;
-using FreeTypeSharp.Native;
-using static FreeTypeSharp.Native.FT;
-
-using ForgeWorks.GlowFork;
-
 using ForgeWorks.ShowBird.Messaging;
 
 using ForgeWorks.TauBetaDelta.Logging;
+using ForgeWorks.TauBetaDelta.Extensibility;
+using ForgeWorks.RailThorn.Fonts.Native;
 
 namespace ForgeWorks.RailThorn.Fonts;
 
-public class FontManager : IDisposable
+public class FontManager : IUnloadable
 {
     /* **
         We have one of 2 ways to go:
@@ -25,26 +21,24 @@ public class FontManager : IDisposable
 
     private static readonly Lazy<FontManager> INSTANCE = new(() => new());
 
-    private readonly FreeTypeLibrary loader;
+    private readonly Dictionary<string, Font> fonts = new();
 
     private ResourceLogger Log { get; } = LoggerManager.Instance.Post;
     private (LoadStatus condition, ErrorCode errCode, string message) Status { get; set; }
-    private readonly Dictionary<string, Font> fonts = new();
+    private FontLibrary FontLib { get; set; }
 
     internal static FontManager Instance => INSTANCE.Value;
-
-    internal FreeTypeLibrary Loader => loader;
 
     public Font Default => GetDefaultFont();
     public string FontDirectory { get; } = TTF_FONTS_DIR;
     public string Info => $"[{Status.condition}.{Status.errCode}] {Status.message}";
 
+    /// <summary>
+    /// When FontManager is instantiated, it will automagically load the default font.
+    /// </summary>
     private FontManager()
     {
-        Status = (LoadStatus.Okay, ErrorCode.NoErr, "FontManager Okay");
-
-        //  initialize FreeType
-        loader = new FreeTypeLibrary();
+        Status = (LoadStatus.Okay, ErrorCode.Ok, "FontManager Okay");
 
         //  verify system fonts .ttf directory
         if (!Directory.Exists(TTF_LIN_SYS_FONTS_DIR))
@@ -53,11 +47,14 @@ public class FontManager : IDisposable
         }
         else
         {
+            FontLib = new(TTF_FONTS_DIR);
+
             //  get the default system font
             var defaultFont = FontFiles(TTF_LIN_SYS_FONTS_DIR)
                 .Where(f => Path.GetFileNameWithoutExtension(f) == TTF_SYS_LIN_DEFAULT)
                 .FirstOrDefault();
-            if (TryGetFont(loader.Native, defaultFont, out Font font))
+
+            if (TryGetFont(FontLib, defaultFont, out Font font))
             {
                 fonts.Add(font.Name, font);
             }
@@ -69,7 +66,7 @@ public class FontManager : IDisposable
         }
         else
         {
-            Status = (LoadStatus.Okay, ErrorCode.NoErr, $"[{nameof(FontManager)}] Ready Font directory '{FontDirectory}'");
+            Status = (LoadStatus.Okay, ErrorCode.Ok, $"[{nameof(FontManager)}] Ready Font directory '{FontDirectory}'");
         }
 
 
@@ -90,7 +87,7 @@ public class FontManager : IDisposable
         _ = defaultFont.CharacterSet.Count > 0;
         updateAgent($"[FontManager] Default Font: {defaultFont.Name} {(defaultFont.IsLoaded ? "LOADED" : "ERROR")}");
 
-        foreach (var font in Fonts(FontDirectory))
+        foreach (var font in Fonts(FontLib, FontDirectory))
         {
             updateAgent($"Font: {font.Name}");
             fonts.Add(font.Name, font);
@@ -110,7 +107,7 @@ public class FontManager : IDisposable
 
         return font;
     }
-    private static IEnumerable<Font> Fonts(string directory)
+    private static IEnumerable<Font> Fonts(FontLibrary fontLib, string directory)
     {
         //  assumes each .ttf is in its own folder
         foreach (var fontDir in Directory.GetDirectories(directory))
@@ -120,11 +117,10 @@ public class FontManager : IDisposable
                 .FirstOrDefault();
 
             if (string.IsNullOrEmpty(fontFile))
-            {
-                continue;
-            }
+            { continue; }
 
-            yield return new Font(fontFile);
+            if (TryGetFont(fontLib, fontFile, out Font font))
+            { yield return font; }
         }
     }
     private static IEnumerable<string> FontFiles(string directory)
@@ -143,19 +139,20 @@ public class FontManager : IDisposable
             yield return fontFile;
         }
     }
-    private static bool TryGetFont(nint loadere, string fontFile, out Font font)
+    private static bool TryGetFont(FontLibrary fontLib, string fontFile, out Font font)
     {
-        FT_Error ftErr = FT_Error.FT_Err_Ignore;
+        ResourceStatus resStatus = ResourceStatus.Okay;
         font = null;
 
-        if ((ftErr = FT_New_Face(loadere, fontFile, 0, out nint face)) != FT_Error.FT_Err_Ok)
+        var face = fontLib.LoadFace(fontFile, out resStatus);
+
+        if (resStatus != ResourceStatus.Okay)
         {
-            LoggerManager.Instance.Post(LoadStatus.Error, $"[FreeType] Error: {ftErr} ({fontFile})");
+            string logEntry = $"[FontLibrary] {(resStatus == ResourceStatus.Error ? "Error" : string.Empty)}: {resStatus} ({fontFile})";
+            LoggerManager.Instance.Post(LoadStatus.Error, logEntry);
         }
-        else
-        {
-            font = new Font(fontFile);
-        }
+
+        font = new TrueTypeFont(face);
 
         return font != null;
     }
@@ -170,8 +167,9 @@ public class FontManager : IDisposable
 
         return font;
     }
-    public void Dispose()
+    public void Unload(AutoResetEvent taskEvent)
     {
-
+        fonts.Clear();
+        FontLib.Dispose();
     }
 }

@@ -1,8 +1,8 @@
-using OpenTK.Mathematics;
+using System.Collections.ObjectModel;
+
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.Common;
 
-using ForgeWorks.RailThorn.Graphics;
 using ForgeWorks.RailThorn.Controls;
 
 using ForgeWorks.TauBetaDelta.Logging;
@@ -11,66 +11,74 @@ namespace ForgeWorks.TauBetaDelta;
 
 public class LoadingView : GameView
 {
-    private float[] Vertices { get; set; }
-    private uint[] Indices { get; set; }
-    private Image Splash { get; set; }
-    private Label StatusOne { get; set; }
+    private readonly Collection<RendererControl> controls = new();
+    private readonly Text text;
 
     public LoadingView(LoadingState gameState) : base(gameState)
     {
-        //  add Image control
-        Splash = new Image("Splash", "splash");
+        // controls.Add(new Image("Splash", "sample_splash"));
+        // controls.Add(new Label(this, "Status_1")
+        // {
+        //     Color = Color4.PaleGoldenrod,
+        //     Text = "AaBb",
+        //     Location = (25, 50)
+        // });
+        text = new(this)
+        {
+            Content = "Project Omega.Chi"
+        };
     }
 
     public override void Init()
     {
         LOGGER.Post(LogLevel.Default, $"{Name}View.{nameof(Init)}");
 
-        // add Label control
-        StatusOne = new Label(this, "Status_1")
+        foreach (var c in controls)
         {
-            Color = Color4.PaleGoldenrod,
-            Text = "AaBb",
-            Location = (25, 50)
-        };
+            //  init controls
+            c.Init();
+        }
+        text.Init();
 
         OnLoad();
     }
-
     public override void OnLoad()
     {
         LOGGER.Post(LogLevel.Default, $"{Name}View.{nameof(OnLoad)}");
-
         GL.ClearColor(Background);
-
-        //  initi controls here
-        // Splash.Init();
-        StatusOne.Init();
 
         //  raise event
         base.OnLoad();
     }
+    public override void OnFramebufferResize(FramebufferResizeEventArgs args)
+    {
+        LOGGER.Post(LogLevel.Debug, $"{Name}View.{nameof(OnFramebufferResize)} [{Location};{ViewPort}]");
+        SetViewport(Location, ViewPort);
+    }
     public override void OnResize(ResizeEventArgs args)
     {
-        LOGGER.Post(LogLevel.Default, $"{Name}View.{nameof(OnResize)} [{Location};{ViewPort}]");
-
-        //  update the opengl viewport
-        SetViewport(Location, ViewPort);
+        LOGGER.Post(LogLevel.Debug, $"{Name}View.{nameof(OnResize)} [{Location};{ViewPort}]");
     }
     public override void OnUpdateFrame(FrameEventArgs args)
     {
-        //  update controls
-        // Splash.Update();
-        StatusOne.Update();
+        foreach (var c in controls)
+        {
+            //  update controls
+            c.Update();
+        }
+        text.Update();
     }
     public override void OnRenderFrame(FrameEventArgs args)
     {
         // GL.ClearColor(Background);
         GL.Clear(ClearBufferMask.ColorBufferBit);
 
-        //  redner controls
-        // Splash.Render();
-        StatusOne.Render();
+        foreach (var c in controls)
+        {
+            //  redner controls
+            c.Render();
+        }
+        text.Render();
 
         //  swap buffers
         SwapBuffers();

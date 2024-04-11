@@ -2,8 +2,6 @@ using System.Net;
 using System.Text;
 using System.Net.Sockets;
 
-using ForgeWorks.GlowFork;
-
 namespace ForgeWorks.ShowBird;
 
 public class Server : NetPeer
@@ -36,7 +34,7 @@ public class Server : NetPeer
         }
         catch (Exception ex)
         {
-            Log(LoadStatus.Error, ex.Message);
+            LOGGER.Post(ex, ex.Message);
         }
     }
 
@@ -53,13 +51,11 @@ public class Server : NetPeer
     /// <summary>
     /// <inheritdoc />
     /// </summary>
-    public override void Stop()
+    public override void RequestShutdown()
     {
         //  if a Handler was never assigned then we don't want to throw an exception here
         Handler?.Shutdown(SocketShutdown.Both);
-        Handler?.Close();
         Listener?.Shutdown(SocketShutdown.Both);
-        Listener?.Close();
         //  set IsRunning FALSE
         IsRunning = false;
     }
@@ -68,5 +64,11 @@ public class Server : NetPeer
     {
         byte[] out_bytes = Encoding.ASCII.GetBytes(out_data);
         Handler.Send(out_bytes);
+    }
+
+    public override void Dispose()
+    {
+        Handler?.Close();
+        Listener?.Close();
     }
 }

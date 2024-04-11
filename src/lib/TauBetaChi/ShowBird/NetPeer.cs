@@ -1,14 +1,16 @@
 using System.Net;
-using ForgeWorks.GlowFork;
-using ForgeWorks.TauBetaDelta.Collections;
+
+using ForgeWorks.RailThorn;
+
 using ForgeWorks.TauBetaDelta.Logging;
+using ForgeWorks.TauBetaDelta.Collections;
 
 namespace ForgeWorks.ShowBird;
 
 /// <summary>
 /// Base EndPoint class from which the Client/Server objects are built
 /// </summary>
-public abstract class NetPeer
+public abstract class NetPeer : IDisposable
 {
     protected static readonly LoggerManager LOGGER = LoggerManager.Instance;
     protected static readonly INetwork NETWORK = Registry.Get<Network>();
@@ -46,10 +48,12 @@ public abstract class NetPeer
     /// <summary>
     /// Stop the current <see cref="ShowBird.NetPeer"/> component
     /// </summary>
-    public abstract void Stop();
+    public abstract void RequestShutdown();
 
     protected void Log(LoadStatus loadStatus, string logEntry)
     {
         LOGGER.Post(loadStatus, $"[{GetType().Name}.{Name}] {logEntry}");
     }
+
+    public abstract void Dispose();
 }

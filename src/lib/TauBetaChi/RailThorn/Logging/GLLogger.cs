@@ -4,22 +4,41 @@ using OpenTK.Graphics.OpenGL4;
 
 using ForgeWorks.TauBetaDelta.Logging;
 
-namespace ForgeWorks.GlowFork.Logging;
+namespace ForgeWorks.RailThorn.Logging;
 
-public class GLLogger : ILogger
+public class GLLogger : Logger
 {
+    private static readonly string LOG_FILE = $"GL_LOG_{GetFileGuid()}.log";
     private static readonly Lazy<GLLogger> _GL_LOGGER = new(() => new());
+    private static readonly object OBJ_LOCK = new();
+
+    private string LogDir { get; } = Path.Combine(LOG_DIR, "gl_logs");
 
     internal static GLLogger Instance => _GL_LOGGER.Value;
     internal static DebugProc DebugMessageDelegate = GLLog;
 
+    private RunMode RunMode { get; }
+    private string LogFile { get; }
+
     private GLLogger()
     {
+        CheckLogDirectory(LogDir);
+        LogLevel = LogLevel.GLDebug;
+
         LoggerManager.Instance.Add(this);
+        //  TODO:   use IApplicationContext interface
+        RunMode = LoggerManager.Instance.RunMode;
+        LogFile = Path.Combine(LogDir, LOG_FILE);
+
+        if (!File.Exists(LogFile))
+        {
+            var logMsg = Encode($"*** GL_LOGGER *** Open LogFile @{DateTime.UtcNow} ***\n");
+            using (var logFile = File.Create(LogFile, logMsg.Length, FileOptions.None))
+            {
+                logFile.Write(logMsg);
+            }
+        }
     }
-
-
-    public LogLevel LogLevel => LogLevel.GLDebug;
 
     /// <summary>
     /// 
@@ -49,17 +68,33 @@ public class GLLogger : ILogger
         OpenTK.Graphics.OpenGL4.ErrorCode errCode = GL.GetError();
         if (errCode != OpenTK.Graphics.OpenGL4.ErrorCode.NoError)
         {
-            WriteLine($"[{LoadStatus.Error}] [{methodName}] {errCode}");
+            WriteLogEntry($"[{LoadStatus.Error}] [{methodName}] {errCode}");
         }
-
     }
-    public void WriteLine(string message)
+    public override void WriteLine(string message)
     {
-        Console.WriteLine($"[{nameof(GLLogger)}] {message}");
+        if (RunMode == RunMode.Debug)
+        {
+            if (message.IndexOf($"[GLDebug]") >= 0)
+            { WriteLogEntry($"[{nameof(GLLogger)}] {message}\n"); }
+        }
     }
 
-    public void Dispose()
+    private void WriteLogEntry(string message)
     {
-        //  nothing to do here ...
+        lock (OBJ_LOCK)
+        {
+            using (var logFile = File.OpenWrite(LogFile))
+            {
+                //  move to end of file
+                logFile.Seek(0, SeekOrigin.End);
+                logFile.Write(Encode($"{message}\n"));
+            }
+        }
+    }
+
+    public override void Dispose()
+    {
+        // ... ???
     }
 }

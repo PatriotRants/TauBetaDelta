@@ -1,7 +1,9 @@
 using System.ComponentModel;
-using ForgeWorks.TauBetaDelta.Presentation;
+
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
+
+using ForgeWorks.TauBetaDelta.Presentation;
 
 namespace ForgeWorks.TauBetaDelta;
 
@@ -123,16 +125,20 @@ internal sealed partial class Game
 
         internal void SetView(IView view)
         {
-            View = view;
+            View = view ?? View;
         }
         internal void ChangeView(IView view)
         {
+            //  if view is null, keep the same view
             SetView(view);
 
-            ClientSize = view.ClientSize;
-            WindowBorder = view.WindowBorder;
-            WindowState = view.WindowState;
-            IsVisible = view.IsVisible;
+            if (view != null)
+            {
+                ClientSize = view.ClientSize;
+                WindowBorder = view.WindowBorder;
+                WindowState = view.WindowState;
+                IsVisible = view.IsVisible;
+            }
         }
     }
 }

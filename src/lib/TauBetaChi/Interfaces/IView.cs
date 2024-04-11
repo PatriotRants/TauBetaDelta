@@ -4,8 +4,6 @@ using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
-using ForgeWorks.RailThorn;
-
 namespace ForgeWorks.TauBetaDelta.Presentation;
 
 public interface IView : IDisposable

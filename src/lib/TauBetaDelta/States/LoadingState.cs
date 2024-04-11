@@ -2,9 +2,10 @@ using OpenTK.Mathematics;
 
 using ForgeWorks.ShowBird.Messaging;
 
-using ForgeWorks.GlowFork;
 using ForgeWorks.GlowFork.Tasking;
-using ErrorCode = ForgeWorks.GlowFork.ErrorCode;
+
+using ForgeWorks.RailThorn;
+using ErrorCode = ForgeWorks.RailThorn.ErrorCode;
 
 using ForgeWorks.TauBetaDelta.Logging;
 
@@ -85,6 +86,7 @@ public class LoadingState : GameState
         //  dispose view
         View.Dispose();
     }
+
     private static string LoadFonts(UpdateAgent updateAgent)
     {
         updateAgent($"[{LogLevel.Debug}] {FONTS.Info}");
@@ -109,7 +111,7 @@ public class LoadingState : GameState
                             throw new DirectoryNotFoundException(ASSETS.Info);
 
                         //  break;
-                        case ErrorCode.NoErr:
+                        case ErrorCode.Ok:
                         default:
                             //  nothing to do ... ???
 
@@ -121,17 +123,16 @@ public class LoadingState : GameState
         }
         catch (DirectoryNotFoundException ex)
         {
-            LOGGER.Post(LogLevel.Error, ex.Message);
-            LOGGER.Post(LogLevel.Error, $"Source: '{ex.Source}'");
-            LOGGER.Post(LogLevel.Error, $"Target: '{ex.TargetSite}");
-            LOGGER.Post(LogLevel.Error, ex.StackTrace);
+            LOGGER.Post(ex, ex.Message);
         }
 
         return ASSETS.Info;
     }
     private static string StartNetwork(UpdateAgent updateAgent)
     {
-        return NETWORK.StartNetwork(updateAgent);
+        updateAgent(NETWORK.StartNetwork(updateAgent));
+
+        return "Network Start Up Complete";
     }
     private void OnViewLoaded()
     {

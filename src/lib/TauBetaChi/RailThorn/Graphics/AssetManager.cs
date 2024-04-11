@@ -1,10 +1,11 @@
-using ForgeWorks.GlowFork;
 using ForgeWorks.ShowBird.Messaging;
+
 using ForgeWorks.TauBetaDelta.Logging;
+using ForgeWorks.TauBetaDelta.Extensibility;
 
 namespace ForgeWorks.RailThorn.Graphics;
 
-public class AssetManager : IDisposable
+public class AssetManager : IUnloadable
 {
     private static readonly Lazy<AssetManager> INSTANCE = new(() => new());
 
@@ -29,7 +30,7 @@ public class AssetManager : IDisposable
         }
         else
         {
-            Status = (LoadStatus.Okay, ErrorCode.NoErr, $"[{nameof(AssetManager)}] Loading Content directory '{ContentDirectory}'");
+            Status = (LoadStatus.Okay, ErrorCode.Ok, $"[{nameof(AssetManager)}] Loading Content directory '{ContentDirectory}'");
         }
     }
 
@@ -67,10 +68,13 @@ public class AssetManager : IDisposable
     }
     public bool LoadTexture(string texName, out Texture texture)
     {
-        var file = Path.Combine(ContentDirectory, $"{texName}.png");
-        texture = Texture.LoadFromFile(file);
+        if (!_textures.TryGetValue(texName, out texture))
+        {
+            var file = Path.Combine(ContentDirectory, $"{texName}.png");
+            texture = Texture.LoadFromFile(file);
 
-        _textures.Add(texName, texture);
+            _textures.Add(texName, texture);
+        }
 
         return texture != null;
     }
@@ -78,10 +82,10 @@ public class AssetManager : IDisposable
     {
         errCode = Status.errCode;
 
-        return errCode != ErrorCode.NoErr;
+        return errCode != ErrorCode.Ok;
     }
 
-    public void Dispose()
+    public void Unload(AutoResetEvent taskEvent)
     {
         foreach (Texture texture in _textures.Values)
         {

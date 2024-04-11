@@ -1,32 +1,35 @@
 using OpenTK.Mathematics;
+using OpenTK.Graphics.OpenGL4;
 
-using FreeTypeSharp;
+using ForgeWorks.RailThorn.Fonts.Native;
 
 namespace ForgeWorks.RailThorn.Fonts;
 
-public class Font
+public abstract class Font
 {
-    private static readonly FreeTypeLibrary LOADER = FontManager.Instance.Loader;
     public static Font Default => FontManager.Instance.Default;
 
     private readonly Lazy<CharacterSet> _characterSet;
+    private readonly Face face;
 
-    private CharacterSet characterSet;
 
-    private string FontFile { get; } = string.Empty;
+    protected CharacterSet characterSet;
+    protected FontLibrary FontLib => face.FontLib;
+    protected Face Face => face;
 
-    internal string Source => FontFile;
-
-    public string Name { get; }
     public ICharacterSet CharacterSet => _characterSet.Value;
     public bool IsLoaded => characterSet?.Count > 0;
-
-    public Font(string fontFile)
+    public string Name { get; protected init; }
+    public uint Height
     {
-        _characterSet = new(MapFont);
+        get => face.PixelHeight;
+        set => face.SetPixelSize(0, value);
+    }
 
-        FontFile = fontFile;
-        Name = Path.GetFileNameWithoutExtension(fontFile);
+    public Font(Face fontFace)
+    {
+        face = fontFace;
+        _characterSet = new(MapFont);
     }
 
     /// <summary>
@@ -41,25 +44,15 @@ public class Font
     /// <summary>
     /// lazy loads the character set
     /// </summary>
-    private CharacterSet MapFont()
-    {
-        if (!IsLoaded)
-        {
-            using (var mapper = new CharacterMapper(LOADER.Native, FontFile))
-            {
-                characterSet = new(Name, mapper.MapFont());
-            }
-        }
+    protected abstract CharacterSet MapFont();
 
-        return characterSet;
-    }
 
     public struct Character
     {
         public char Glyph { get; set; }
-        public uint TextureId { get; init; }
+        public int TextureId { get; init; }
         public Vector2 Size { get; init; }
         public Vector2 Bearing { get; init; }
-        public float Advance { get; init; }
+        public int Advance { get; init; }
     }
 }

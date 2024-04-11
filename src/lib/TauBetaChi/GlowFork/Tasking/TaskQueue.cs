@@ -62,11 +62,16 @@ public sealed class TaskQueue
     /// <summary>
     /// Starts task queue execution
     /// </summary>
-    public void Start(ManualResetEvent gateEvent)
+    public void Start(ManualResetEvent gateEvent, bool asSync = false)
     {
         foreach (var agent in _taskAgents)
         {
             agent.Start();
+
+            if (asSync)
+            {
+                agent.Wait();
+            }
         }
 
         gateEvent.Set();

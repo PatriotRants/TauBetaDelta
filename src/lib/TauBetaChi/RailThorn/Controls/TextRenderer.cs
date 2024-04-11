@@ -2,6 +2,10 @@ using OpenTK.Mathematics;
 using OpenTK.Graphics.OpenGL4;
 
 using ForgeWorks.RailThorn.Fonts;
+using ForgeWorks.RailThorn.Mathematics;
+
+using ForgeWorks.TauBetaDelta.Logging;
+using ForgeWorks.TauBetaDelta.Collections;
 
 namespace ForgeWorks.RailThorn.Controls;
 
@@ -24,7 +28,7 @@ public abstract class TextRenderer : RendererControl
         width = container.Width;
         height = container.Height;
 
-        shader = SHADERS.LoadShader("label.shaders");
+        Shader = SHADERS.LoadShader("label.shaders");
     }
 
     public override void Init()
@@ -33,24 +37,27 @@ public abstract class TextRenderer : RendererControl
         characterMap = Font.CharacterSet;
 
         //  configure everything for rendering Text
-        // GL.Enable(EnableCap.CullFace);
         GL.Enable(EnableCap.Blend);
+        // GL.Enable(EnableCap.CullFace);
+        // GL.Enable(EnableCap.Texture2D);
         GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
-        projection = Matrix4.CreateOrthographic(width, height, 0.0f, 0.0f);
-        shader.SetMatrix4("projection", projection);
+        //  CreateOrthographicOffCenter(float left, float right, float bottom, float top, float depthNear, float depthFar)
+        projection = Matrix4.CreateOrthographicOffCenter(0.0f, width, 0.0f, height, 0.1f, 1.0f);
+        LOGGER.Post(LogLevel.GLDebug, $"[{nameof(TextRenderer)}.{nameof(Init)}] Projection:\n{{{projection}}}");
+
+        Shader.SetMatrix4("projection", projection);
 
         //  create VAO & VBO for texture quads
         GL.GenVertexArrays(1, out _vao);
         GL.GenBuffers(1, out _vbo);
         GL.BindVertexArray(_vao);
         GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
-        GL.BufferData(BufferTarget.ArrayBuffer, sizeof(float) * 24, nint.Zero, BufferUsageHint.DynamicDraw);
+        GL.BufferData(BufferTarget.ArrayBuffer, sizeof(float) * 4 * 6, nint.Zero, BufferUsageHint.DynamicDraw);
         GL.EnableVertexAttribArray(0);
-        GL.VertexAttribPointer(0, 4, VertexAttribPointerType.Float, false, 4 * sizeof(float), 0);
+        GL.VertexAttribPointer(0, 4, VertexAttribPointerType.Float, false, 4 * sizeof(float), 2 * sizeof(float));
         GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
         GL.BindVertexArray(0);
     }
-
     public override void Update()
     {
         //  if font changes
@@ -60,14 +67,14 @@ public abstract class TextRenderer : RendererControl
         }
 
         //  activate corresponding render state
-        shader.SetVector3("textColor", (Color.R, Color.G, Color.B));
+        Shader.SetVector3("textColor", (Color.R, Color.G, Color.B));
         GL.ActiveTexture(TextureUnit.Texture0);
         //  bind VAO
         GL.BindVertexArray(_vao);
     }
     public override void Render()
     {
-        shader.Use();
+        Shader.Use();
 
         // iterate character map
         var text = Text.ToArray();
@@ -77,25 +84,20 @@ public abstract class TextRenderer : RendererControl
 
         while (ndx < text.Length)
         {
-            float[,] vertices = MapText(text[ndx], ref x, ref y, out uint textureId);
+            Vertex[] vertices = MapText(text[ndx], ref x, ref y, out int textureId);
+            LOGGER.Post(LogLevel.GLDebug, $"[MapText] ({text[ndx]})(tex:{textureId}){vertices.ToString(vertices.Length)}");
 
             GL.BindTexture(TextureTarget.Texture2D, textureId);
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
-            GL.BufferSubData(BufferTarget.ArrayBuffer, 0, sizeof(float) * vertices.Length, vertices);
+            GL.BufferSubData(BufferTarget.ArrayBuffer, 0, sizeof(float) * 4 * 6, vertices);
 
-            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
             GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
 
             ++ndx;
         }
-
-        GL.BindVertexArray(0);
-        GL.BindTexture(TextureTarget.Texture2D, 0);
-
-        // shader.Use();
     }
 
-    private float[,] MapText(char c, ref float x, ref float y, out uint textureId)
+    private Vertex[] MapText(char c, ref float x, ref float y, out int textureId)
     {
         Font.Character character = characterMap[c];
         textureId = character.TextureId;
@@ -107,20 +109,22 @@ public abstract class TextRenderer : RendererControl
         float w = map.w * Scale;
         float h = map.h * Scale;
 
-        float[,] vertices = new float[6, 4]{
-            {xpos,     ypos + h,   0.0f, 0.0f},
-            {xpos,     ypos,       0.0f, 1.0f},
-            {xpos + w, ypos,       1.0f, 1.0f},
-            {xpos,     ypos + h,   0.0f, 0.0f},
-            {xpos + w, ypos,       1.0f, 1.0f},
-            {xpos + w, ypos + h,   1.0f, 0.0f}
+        Vertex[] vertices = new Vertex[6]{
+            ((xpos,     ypos + h),   (0.0f, 0.0f)),
+            ((xpos,     ypos),       (0.0f, 1.0f)),
+            ((xpos + w, ypos),       (1.0f, 1.0f)),
+            ((xpos,     ypos + h),   (0.0f, 0.0f)),
+            ((xpos + w, ypos),       (1.0f, 1.0f)),
+            ((xpos + w, ypos + h),   (1.0f, 0.0f))
         };
 
         /*         
             // now advance cursors for next glyph (note that advance is number of 1/64 pixels)
             x += (ch.Advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
+
+            ** was applying conversion here but we apply pixel scaling in CharacterTexMap
          */
-        x += character.Advance / 64 * Scale;
+        x += character.Advance;
 
         return vertices;
     }

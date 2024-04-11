@@ -2,14 +2,12 @@ using System.Text;
 
 using OpenTK.Graphics.OpenGL4;
 
-using ForgeWorks.GlowFork;
-using ErrorCode = ForgeWorks.GlowFork.ErrorCode;
-
 using ForgeWorks.TauBetaDelta.Logging;
+using ForgeWorks.TauBetaDelta.Extensibility;
 
 namespace ForgeWorks.RailThorn.Graphics;
 
-public class ShaderManager : IDisposable
+public class ShaderManager : IUnloadable
 {
     private static readonly Lazy<ShaderManager> INSTANCE = new(() => new());
 
@@ -110,7 +108,7 @@ public class ShaderManager : IDisposable
     {
         errCode = Status.errCode;
 
-        return errCode != ErrorCode.NoErr;
+        return errCode != ErrorCode.Ok;
     }
 
     private static string[] LoadFile(string sourceFile)
@@ -183,7 +181,7 @@ public class ShaderManager : IDisposable
         return flag != 0;
     }
 
-    public void Dispose()
+    public void Unload(AutoResetEvent taskEvent)
     {
         //  ???
     }

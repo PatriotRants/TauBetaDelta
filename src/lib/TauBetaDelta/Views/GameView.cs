@@ -6,6 +6,7 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
+using ForgeWorks.RailThorn;
 using ForgeWorks.RailThorn.Controls;
 using ForgeWorks.RailThorn.Graphics;
 
@@ -122,6 +123,8 @@ public abstract class GameView : IView, IViewContainer
     /// </summary>
     public event Action<FileDropEventArgs> FileDrop;
     #endregion
+
+    protected RunMode RunMode => GAME.RunMode;
 
     public KeyboardState KeyboardState => GAME.GetKeyboardState();
     public MouseState MouseState => GAME.GetMouseState();

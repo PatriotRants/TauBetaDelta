@@ -17,8 +17,17 @@ public class TauBetaDelta : IDisposable
     {
         Game.Start();
     }
+
     public void Dispose()
     {
-        //  clean up managed resources
+        //  unload game & clean up managed resources
+        AutoResetEvent taskEvent = new(false);
+        Task.Factory.StartNew(() =>
+        {
+            Game.Unload(taskEvent);
+        });
+
+        taskEvent.WaitOne();
+        taskEvent.Dispose();
     }
 }

@@ -1,3 +1,4 @@
+using ForgeWorks.RailThorn;
 using ForgeWorks.ShowBird;
 
 using ForgeWorks.TauBetaDelta;
@@ -10,7 +11,7 @@ Console.WriteLine($"Welcome to {TITLE}");
 
 Registry.Add(new Network(NAME));
 Registry.Add(new Resources());
-Registry.Add(new Game(NAME, TITLE));
+Registry.Add(new Game(NAME, TITLE) { RunMode = RunMode.Debug });
 
 using (TauBetaDelta tbd = new())
 {

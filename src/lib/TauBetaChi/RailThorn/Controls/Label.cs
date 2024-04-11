@@ -1,5 +1,3 @@
-using ForgeWorks.RailThorn.Graphics;
-
 namespace ForgeWorks.RailThorn.Controls;
 
 public class Label : TextRenderer

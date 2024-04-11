@@ -1,12 +1,13 @@
 using System.Text;
 
 using ForgeWorks.GlowFork;
+using ForgeWorks.RailThorn;
 
 using ForgeWorks.TauBetaDelta;
 using ForgeWorks.TauBetaDelta.Logging;
 
-using ForgeWorks.ShowBird.Serialization;
 using ForgeWorks.ShowBird.Messaging;
+using ForgeWorks.ShowBird.Serialization;
 
 namespace ForgeWorks.ShowBird;
 
@@ -53,6 +54,10 @@ public class Network : INetwork
     /// <inheritdoc />
     /// </summary>
     public DateTime Time { get; private set; }
+    /// <summary>
+    /// <inheritdoc />
+    /// </summary>
+    public bool IsAvailable => Client != null;
 
     /// <summary>
     /// Construct a network controller
@@ -64,18 +69,6 @@ public class Network : INetwork
         Status = NetworkStatus.Idle;
         CLOCK.Tick += OnClockTick;
         Time = DateTime.UtcNow;
-    }
-
-    /// <summary>
-    /// <inheritdoc />
-    /// </summary>
-    public void Dispose()
-    {
-        //  if the network is not stopped, request shut down
-        if (Status != NetworkStatus.ShutdownRequested || Status != NetworkStatus.Idle)
-        {
-            ShutDownNetwork();
-        }
     }
 
     /// <summary>
@@ -107,7 +100,7 @@ public class Network : INetwork
         Status = NetworkStatus.Running;
         Start = DateTime.Now;
 
-        string status = $"[{Start}] Network Status: {Status}";
+        string status = $"[{Start}] ::: Network Status: {Status}";
         Log(LoadStatus.Ready, status);
 
         return status;
@@ -136,7 +129,7 @@ public class Network : INetwork
         }
         catch (Exception ex)
         {
-            Log(LoadStatus.Error, ex.Message);
+            LOGGER.Post(ex, ex.Message);
         }
     }
     private void StartClient()
@@ -156,7 +149,7 @@ public class Network : INetwork
         }
         catch (Exception ex)
         {
-            Log(LoadStatus.Error, ex.Message);
+            LOGGER.Post(ex, ex.Message);
         }
     }
     private void ServerListen()
@@ -191,8 +184,10 @@ public class Network : INetwork
 
             // one shot use
             Server.Send("<SHUTDOWN>");
-            Server.Stop();
+            Server.RequestShutdown();
         }
+
+        Server.Dispose();
     }
     private void ClientListen()
     {
@@ -220,11 +215,14 @@ public class Network : INetwork
                 }
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                LOGGER.Post(ex, ex.Message);
                 break;
             }
         }
+
+        Client.Dispose();
     }
     private void ShutDownNetwork()
     {
@@ -236,7 +234,7 @@ public class Network : INetwork
             ** */
             Client.Send("<SHUTDOWN>");
             Status = NetworkStatus.ShutdownRequested;
-            Client.Stop();
+            Client.RequestShutdown();
         }
         if (!Server.IsRunning && !Client.IsRunning)
         {
@@ -264,5 +262,16 @@ public class Network : INetwork
     {
         LOGGER.Post(loadStatus, $"[{GetType().Name}.{Name}] {logEntry}");
         Updater($"[{loadStatus}] {logEntry}");
+    }
+
+    public void Unload(AutoResetEvent taskEvent)
+    {
+        //  if the network is not stopped, request shut down
+        if (Status != NetworkStatus.ShutdownRequested || Status != NetworkStatus.Idle)
+        {
+            ShutDownNetwork();
+        }
+
+        taskEvent.Set();
     }
 }

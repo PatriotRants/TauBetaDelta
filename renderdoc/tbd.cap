@@ -7,7 +7,7 @@
         ],
         "executable": "/home/david/Dev/Local/TauBetaDelta/main/src/lib/TauBetaDelta/bin/Debug/net7.0/TauBetaDelta",
         "inject": false,
-        "numQueuedFrames": 0,
+        "numQueuedFrames": 10,
         "options": {
             "allowFullscreen": true,
             "allowVSync": true,
@@ -22,7 +22,7 @@
             "softMemoryLimit": 0,
             "verifyBufferAccess": false
         },
-        "queuedFrameCap": 0,
+        "queuedFrameCap": 5,
         "workingDir": ""
     }
 }

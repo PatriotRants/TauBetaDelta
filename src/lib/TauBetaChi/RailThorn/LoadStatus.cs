@@ -1,4 +1,4 @@
-namespace ForgeWorks.GlowFork;
+namespace ForgeWorks.RailThorn;
 
 public enum LoadStatus
 {
